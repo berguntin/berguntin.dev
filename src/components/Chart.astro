@@ -1,0 +1,303 @@
+---
+import chart from '../data/ria-coruna.json';
+
+// Proyección equirectangular: la misma que usa scripts/build-chart.py.
+const { width: VW, height: VH } = chart;
+const [S, W, N, E] = chart.bbox as [number, number, number, number];
+const x = (lon: number) => ((lon - W) / (E - W)) * VW;
+const y = (lat: number) => ((N - lat) / (N - S)) * VH;
+
+// Graduación del marco en minutos de arco, alternando tinta y papel como en una carta impresa.
+const BAR = 6;
+const minuteMarks = (from: number, to: number) => {
+  const marks: number[] = [];
+  for (let m = Math.ceil(Math.min(from, to) * 60); m <= Math.floor(Math.max(from, to) * 60); m++) marks.push(m / 60);
+  return marks;
+};
+const latMarks = minuteMarks(S, N);
+const lonMarks = minuteMarks(W, E);
+const segments = (marks: number[], toPx: (v: number) => number, max: number) => {
+  const px = [0, ...marks.map(toPx), max].sort((a, b) => a - b);
+  return px.slice(0, -1).map((start, i) => ({ start, end: px[i + 1], dark: i % 2 === 0 }));
+};
+const latSegments = segments(latMarks, y, VH);
+const lonSegments = segments(lonMarks, x, VW);
+const dms = (value: number, hemi: string) => {
+  const abs = Math.abs(value);
+  const deg = Math.floor(abs + 1e-9);
+  const min = Math.round((abs - deg) * 60);
+  return `${deg}°${String(min).padStart(2, '0')}′${hemi}`;
+};
+const latLabels = latMarks.filter((v) => Math.round(v * 60) % 2 === 0);
+const lonLabels = lonMarks.filter((v) => Math.round(Math.abs(v) * 60) % 2 === 0);
+
+const [torreX, torreY] = chart.points.torre;
+const [courseX, courseY] = chart.points.course;
+const R = 80;
+// Ceñida en bordos a 45° del viento (coordenadas locales: el viento entra por arriba).
+const beat = [
+  [0, R],
+  [0.33 * R, R - 0.33 * R],
+  [(0.33 - 0.78) * R, R - 1.11 * R],
+  [(0.33 - 0.78 + 0.67) * R, R - 1.78 * R],
+  [0, -R + 4],
+];
+const run = [
+  [-12, -R + 6],
+  [-12, R - 14],
+  [0, R],
+];
+const track = [...beat, ...run];
+const trackPath = 'M' + beat.map(([px, py]) => `${px.toFixed(1)},${py.toFixed(1)}`).join('L');
+const rose = { cx: 112, cy: 116, r: 84 };
+---
+
+<svg
+  class="chart"
+  viewBox={`0 0 ${VW} ${VH}`}
+  preserveAspectRatio="xMinYMid slice"
+  role="img"
+  aria-labelledby="chart-title chart-desc"
+  data-track={JSON.stringify(track)}
+>
+  <title id="chart-title">Carta de la ría de A Coruña</title>
+  <desc id="chart-desc">
+    Costa real de A Coruña y Oleiros con la Torre de Hércules y un campo de regatas frente a la bocana. Un Láser ciñe
+    hacia la baliza de barlovento orientado según el viento actual.
+  </desc>
+  <defs>
+    <radialGradient id="torre-glow">
+      <stop offset="0" stop-color="var(--beam)" stop-opacity="1"></stop>
+      <stop offset="1" stop-color="var(--beam)" stop-opacity="0"></stop>
+    </radialGradient>
+  </defs>
+
+  <rect width={VW} height={VH} fill="var(--sea)"></rect>
+
+  <g aria-hidden="true">
+    {chart.iso.map((d, i) => <path d={d} class={`iso iso--${i}`} />)}
+    <path d={chart.land} class="shallow" />
+    <path d={chart.land} class="land" />
+  </g>
+
+  <g class="labels" aria-hidden="true">
+    <text class="label label--place" x="150" y="480">A CORUÑA</text>
+    <text class="label label--place" x="760" y="352">OLEIROS</text>
+    <text class="label label--water" x="760" y="62">GOLFO ÁRTABRO</text>
+  </g>
+
+  <g class="torre" aria-hidden="true">
+    <circle class="torre__glow" cx={torreX} cy={torreY} r="56" fill="url(#torre-glow)"></circle>
+    <path
+      class="torre__flare"
+      d={`M${torreX},${torreY} q-6,-10 -2,-24 q8,6 2,24z`}
+      transform={`rotate(-35 ${torreX} ${torreY})`}
+    ></path>
+    <circle cx={torreX} cy={torreY} r="2.5" class="torre__dot"></circle>
+    <text class="label label--light" x={torreX - 16} y={torreY - 44} text-anchor="end">Torre de Hércules</text>
+    <text class="label label--light label--mono" x={torreX - 16} y={torreY - 30} text-anchor="end">GpD(4)B 20s 23M</text>
+  </g>
+
+  <g class="rose" aria-hidden="true" transform={`translate(${rose.cx} ${rose.cy})`}>
+    <circle r={rose.r} class="rose__ring"></circle>
+    <circle r={rose.r - 12} class="rose__ring"></circle>
+    {
+      Array.from({ length: 72 }, (_, i) => i * 5).map((deg) => (
+        <line
+          y1={-rose.r}
+          y2={-rose.r + (deg % 30 === 0 ? 12 : deg % 10 === 0 ? 7 : 4)}
+          transform={`rotate(${deg})`}
+          class="rose__tick"
+        />
+      ))
+    }
+    {
+      [0, 90, 180, 270].map((deg) => (
+        <path d={`M0,${-(rose.r - 14)} L5,-12 L0,0 L-5,-12Z`} transform={`rotate(${deg})`} class="rose__point" />
+      ))
+    }
+    <text class="rose__north" y={-rose.r - 8} text-anchor="middle">N</text>
+    <g class="wind-barb" id="wind-barb" style="--wind: 45deg">
+      <line y1="0" y2={-(rose.r - 16)} class="wind-barb__shaft"></line>
+      <g id="wind-barb-feathers" transform={`translate(0 ${-(rose.r - 16)})`}></g>
+      <circle r="3" class="wind-barb__hub"></circle>
+    </g>
+  </g>
+
+  <g class="course" id="course" style={`--wind: 45deg; transform-origin: ${courseX}px ${courseY}px`}>
+    <g transform={`translate(${courseX} ${courseY})`}>
+      <path d={trackPath} class="course__track"></path>
+      <line x1="-30" y1={R} x2="30" y2={R} class="course__line"></line>
+      <g transform={`translate(30 ${R})`}>
+        <rect x="-4" y="-7" width="8" height="14" rx="2" class="course__committee"></rect>
+        <line x1="0" y1="-7" x2="0" y2="-16" class="course__mast"></line>
+        <rect x="0" y="-16" width="6" height="4" class="course__flag"></rect>
+      </g>
+      <circle cx="-30" cy={R} r="3.5" class="course__mark"></circle>
+      <circle cx="0" cy={-R} r="5" class="course__mark"></circle>
+      <g id="boat" class="boat" transform={`translate(0 ${R}) rotate(45)`}>
+        <path d="M0,-10 C3.6,-6 3.9,2 3,10 L-3,10 C-3.9,2 -3.6,-6 0,-10Z" class="boat__hull"></path>
+        <g id="boat-boom" transform="rotate(-10 0 -4)">
+          <path d="M0,-4 Q2.6,2 0,8" class="boat__sail"></path>
+          <line x1="0" y1="-4" x2="0" y2="8" class="boat__boom"></line>
+        </g>
+        <circle cy="-4" r="1.2" class="boat__mast"></circle>
+      </g>
+    </g>
+  </g>
+
+  <g class="frame" aria-hidden="true">
+    <rect x="0.5" y="0.5" width={VW - 1} height={VH - 1} class="frame__line"></rect>
+    {
+      lonSegments.map((s) => (
+        <>
+          <rect x={s.start} y="0" width={s.end - s.start} height={BAR} class={s.dark ? 'frame__dark' : 'frame__light'} />
+          <rect x={s.start} y={VH - BAR} width={s.end - s.start} height={BAR} class={s.dark ? 'frame__dark' : 'frame__light'} />
+        </>
+      ))
+    }
+    {
+      latSegments.map((s) => (
+        <>
+          <rect x="0" y={s.start} width={BAR} height={s.end - s.start} class={s.dark ? 'frame__dark' : 'frame__light'} />
+          <rect x={VW - BAR} y={s.start} width={BAR} height={s.end - s.start} class={s.dark ? 'frame__dark' : 'frame__light'} />
+        </>
+      ))
+    }
+    <rect x={BAR} y={BAR} width={VW - BAR * 2} height={VH - BAR * 2} class="frame__line"></rect>
+    {
+      latLabels.map((v) => (
+        <text
+          class="frame__label"
+          x={VW - BAR - 6}
+          y={y(v)}
+          text-anchor="middle"
+          transform={`rotate(-90 ${VW - BAR - 6} ${y(v)})`}
+        >
+          {dms(v, 'N')}
+        </text>
+      ))
+    }
+    {
+      lonLabels.map((v) => (
+        <text class="frame__label" x={x(v) + 5} y={VH - BAR - 6}>
+          {dms(v, 'W')}
+        </text>
+      ))
+    }
+  </g>
+</svg>
+
+<style>
+  .chart {
+    display: block;
+    width: 100%;
+    height: 100%;
+    font-family: var(--font-mono);
+  }
+  .land {
+    fill: var(--land);
+    stroke: var(--coast);
+    stroke-width: 0.8;
+    stroke-linejoin: round;
+  }
+  .shallow {
+    fill: none;
+    stroke: var(--shallow);
+    stroke-width: 26;
+    stroke-linejoin: round;
+  }
+  .iso {
+    fill: none;
+    stroke: var(--iso);
+    stroke-width: 0.7;
+  }
+  .iso--1 { stroke-dasharray: 6 3; }
+
+  .label {
+    fill: var(--ink-muted);
+    font-size: 12px;
+    letter-spacing: 0.24em;
+  }
+  .label--place { fill: var(--ink); font-weight: 500; }
+  .label--water { fill: var(--iso); letter-spacing: 0.4em; }
+  .label--light {
+    fill: var(--magenta);
+    letter-spacing: 0.02em;
+    font-family: var(--font-sans);
+    font-weight: 600;
+  }
+  .label--mono { font-family: var(--font-mono); font-weight: 400; font-size: 11px; }
+
+  .torre__flare { fill: var(--magenta); opacity: 0.85; }
+  .torre__dot { fill: var(--ink); }
+  .torre__glow {
+    opacity: 0;
+    mix-blend-mode: screen;
+    /* Grupo de 4 destellos cada 20 s: (L0.3 oc3.0) x3, L0.3 oc9.8 */
+    animation: torre-flash 20s linear infinite;
+  }
+  @keyframes torre-flash {
+    0%, 1.5% { opacity: 1; }
+    1.6%, 16.4% { opacity: 0; }
+    16.5%, 18% { opacity: 1; }
+    18.1%, 32.9% { opacity: 0; }
+    33%, 34.5% { opacity: 1; }
+    34.6%, 49.4% { opacity: 0; }
+    49.5%, 51% { opacity: 1; }
+    51.1%, 100% { opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .torre__glow { animation: none; opacity: 0.6; }
+  }
+
+  .rose__ring { fill: none; stroke: var(--magenta); stroke-width: 0.8; opacity: 0.7; }
+  .rose__tick { stroke: var(--magenta); stroke-width: 0.8; opacity: 0.7; }
+  .rose__point { fill: var(--magenta); opacity: 0.18; }
+  .rose__north { fill: var(--magenta); font-size: 12px; font-weight: 600; }
+  .wind-barb {
+    transform: rotate(var(--wind));
+    transition: transform 1400ms var(--ease-fluid);
+  }
+  .wind-barb__shaft,
+  .wind-barb :global(.wind-barb__feather) {
+    stroke: var(--ink);
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+  .wind-barb :global(.wind-barb__pennant) { fill: var(--ink); }
+  .wind-barb__hub { fill: var(--sea); stroke: var(--ink); stroke-width: 2; }
+
+  .course {
+    transform: rotate(var(--wind));
+    transition: transform 1400ms var(--ease-fluid);
+  }
+  .course__track {
+    fill: none;
+    stroke: var(--magenta);
+    stroke-width: 1.2;
+    stroke-dasharray: 4 4;
+    opacity: 0.8;
+  }
+  .course__line { stroke: var(--ink); stroke-width: 1; stroke-dasharray: 2 3; }
+  .course__committee { fill: var(--paper); stroke: var(--ink); stroke-width: 1; }
+  .course__mast { stroke: var(--ink); stroke-width: 1; }
+  .course__flag { fill: var(--flag-blue); }
+  .course__mark { fill: var(--mark); stroke: var(--ink); stroke-width: 0.8; }
+  .boat__hull { fill: var(--paper); stroke: var(--ink); stroke-width: 1; }
+  .boat__sail { fill: var(--paper); stroke: var(--ink); stroke-width: 0.8; }
+  .boat__boom { stroke: var(--ink); stroke-width: 1.2; stroke-linecap: round; }
+  .boat__mast { fill: var(--ink); }
+
+  .frame__line { fill: none; stroke: var(--ink); stroke-width: 1; }
+  .frame__dark { fill: var(--ink); }
+  .frame__light { fill: var(--paper); }
+  .frame__label { fill: var(--ink-muted); font-size: 11px; letter-spacing: 0.04em; }
+
+  @media (max-width: 959px) {
+    .label { font-size: 18px; }
+    .label--mono { font-size: 16px; }
+    .frame__label { font-size: 16px; }
+    .rose__north { font-size: 18px; }
+  }
+</style>

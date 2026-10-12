@@ -1,0 +1,297 @@
+---
+import Chart from './Chart.astro';
+import SignalFlags from './SignalFlags.astro';
+import envelopeIcon from '@phosphor-icons/core/assets/regular/envelope-simple.svg?raw';
+import copyIcon from '@phosphor-icons/core/assets/regular/copy.svg?raw';
+
+const email = 'hugo.b.guntin@gmail.com';
+const proofs = [
+  { value: '1000+', label: 'usuarios concurrentes en Chronos' },
+  { value: '+20%', label: 'de rendimiento en un ecommerce B2B' },
+  { value: '6 h', label: 'de la idea a producción en la DANA' },
+];
+---
+
+<section class="hero" aria-labelledby="hero-title">
+  <div class="sheet">
+    <div class="sheet__chart">
+      <Chart />
+    </div>
+
+    <div class="wind" aria-live="polite">
+      <p class="wind__label">Viento ahora en la ría</p>
+      <p class="wind__value">
+        <span data-wind="dir">NE</span>
+        <span data-wind="speed">12</span><span class="wind__unit">kn</span>
+        <span class="wind__gusts">racha <span data-wind="gusts">17</span> kn</span>
+      </p>
+      <p class="wind__meta"><span data-wind="force">Fuerza 4 · nordés</span></p>
+      <p class="wind__meta wind__source" data-wind="source">Cargando datos de Open Meteo</p>
+    </div>
+
+    <div class="cartouche">
+      <p class="cartouche__kicker">Carta personal · Ría de A Coruña</p>
+      <SignalFlags word="Hugo" showLetters />
+      <h1 id="hero-title" class="cartouche__title">
+        <span class="sr-only">Hugo Bermúdez, frontend engineer. </span>
+        <span class="cartouche__headline">Frontends que aguantan<br /> cuando sopla fuerte.</span>
+      </h1>
+      <p class="cartouche__lead">
+        Soy Hugo, frontend engineer gallego con más de 3 años en SaaS y ecommerce. Trabajo con Vue, Nuxt y TypeScript
+        en plataformas con miles de usuarios, picos de Black Friday y plazos que no se mueven.
+      </p>
+      <div class="cartouche__actions">
+        <a class="button" href={`mailto:${email}`}>
+          <Fragment set:html={envelopeIcon} />
+          Escríbeme
+        </a>
+        <span class="email">
+          <span class="email__address" id="email-address">{email}</span>
+          <button class="email__copy" type="button" data-copy={email} aria-controls="email-address">
+            <Fragment set:html={copyIcon} />
+            <span data-copy-label>Copiar</span>
+          </button>
+        </span>
+      </div>
+      <ul class="proofs" aria-label="Algunos resultados">
+        {
+          proofs.map((proof) => (
+            <li>
+              <strong>{proof.value}</strong> {proof.label}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+
+  <div class="notes">
+    <p>Ría de A Coruña · WGS 84 · Norte arriba</p>
+    <p>
+      Costa ©
+      <a href="https://www.openstreetmap.org/copyright" rel="noopener" target="_blank">colaboradores de OpenStreetMap</a>
+      · No apta para la navegación
+    </p>
+  </div>
+</section>
+
+<script>
+  import '../scripts/regatta';
+</script>
+
+<style>
+  .hero {
+    padding-inline: var(--s-200);
+    padding-block: calc(env(safe-area-inset-top, 0px) + 96px) var(--s-600);
+  }
+  .sheet {
+    position: relative;
+    max-width: 1440px;
+    margin-inline: auto;
+  }
+  .sheet__chart {
+    aspect-ratio: 1200 / 712;
+    max-width: 100%;
+  }
+
+  .wind {
+    position: absolute;
+    left: 1.6%;
+    top: 35%;
+    display: grid;
+    gap: var(--s-25);
+    width: min(240px, 19%);
+    padding: var(--s-100);
+    background: var(--paper);
+    border: 1px solid var(--ink);
+    font-family: var(--font-mono);
+    color: var(--ink);
+  }
+  .wind__label,
+  .wind__meta {
+    font-size: 0.75rem;
+    line-height: 1rem;
+    letter-spacing: 0.04em;
+    color: var(--ink-muted);
+  }
+  .wind__label { text-transform: uppercase; letter-spacing: 0.12em; }
+  .wind__value {
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .wind__unit { font-size: 0.875rem; font-weight: 500; margin-inline-start: var(--s-25); }
+  .wind__gusts {
+    display: block;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 400;
+    color: var(--ink-muted);
+  }
+  .wind__source { opacity: 0.8; }
+
+  .cartouche {
+    position: absolute;
+    right: 3%;
+    bottom: 6%;
+    width: min(620px, 46%);
+    display: grid;
+    gap: var(--s-200);
+    padding: var(--s-400);
+    background: var(--paper);
+    border: 3px double var(--ink);
+    animation: rise 1100ms var(--ease-fluid) both;
+  }
+  @keyframes rise {
+    from { transform: translateY(24px); filter: blur(6px); opacity: 0.4; }
+  }
+  .cartouche__kicker {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+  .cartouche__title { margin-block-start: var(--s-75); }
+  .cartouche__headline {
+    display: block;
+    font-size: 3rem;
+    line-height: 1;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    background: linear-gradient(90deg, var(--heading-from), var(--heading-to));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    padding-block-end: var(--s-50);
+  }
+  .cartouche__lead {
+    max-width: 680px;
+    font-size: 1rem;
+    line-height: 1.5rem;
+    color: var(--ink-muted);
+  }
+  .cartouche__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-100);
+  }
+  .button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-75);
+    padding: var(--s-75) var(--s-100);
+    border-radius: 4px;
+    background: var(--ink);
+    color: var(--sea);
+    font-size: 1rem;
+    line-height: 1.5rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition:
+      transform 500ms var(--ease-fluid),
+      background-color 500ms var(--ease-fluid);
+  }
+  .button:hover { background: var(--magenta); transform: translateY(-1px); }
+  .button:active { transform: scale(0.98); }
+  .button :global(svg),
+  .email__copy :global(svg) { width: 20px; height: 20px; flex: none; }
+
+  .email {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--s-50);
+    min-width: 0;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+  .email__address { user-select: all; overflow-wrap: anywhere; }
+  .email__copy {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-50);
+    padding: var(--s-50) var(--s-75);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--ink-muted);
+    font: inherit;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    cursor: pointer;
+    transition: background-color 500ms var(--ease-fluid), color 500ms var(--ease-fluid);
+  }
+  .email__copy:hover { background: var(--rule); color: var(--ink); }
+  .email__copy:active { transform: scale(0.98); }
+  .email__copy :global(svg) { width: 16px; height: 16px; }
+
+  .proofs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-75) var(--s-300);
+    margin: 0;
+    padding: var(--s-200) 0 0;
+    list-style: none;
+    border-top: 1px solid var(--rule);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--ink-muted);
+  }
+  .proofs strong { color: var(--magenta); font-weight: 600; font-size: 0.875rem; }
+
+  .notes {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--s-75) var(--s-300);
+    max-width: 1440px;
+    margin: var(--s-100) auto 0;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--ink-muted);
+  }
+
+  @media (max-width: 1399px) {
+    .cartouche__headline { font-size: 2.25rem; line-height: 2.5rem; }
+  }
+  @media (max-width: 1199px) {
+    .cartouche { width: min(520px, 52%); padding: var(--s-300); gap: var(--s-100); }
+    .proofs { display: none; }
+  }
+
+  /* Móvil y tablet: la carta se recorta en cuadrado sobre la bocana y la cartela pasa debajo. */
+  @media (max-width: 959px) {
+    .hero { padding-block-start: calc(env(safe-area-inset-top, 0px) + 88px); }
+    .sheet__chart { aspect-ratio: 1 / 1; }
+    .sheet__chart :global(svg) { overflow: hidden; }
+    .wind {
+      position: static;
+      width: auto;
+      padding: var(--s-100) 0;
+      background: none;
+      border: 0;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      border-bottom: 1px solid var(--rule);
+    }
+    .wind__label { grid-column: 1 / -1; }
+    .wind__value { grid-row: 2 / span 2; }
+    .wind__meta { text-align: end; }
+    .cartouche {
+      position: static;
+      width: auto;
+      margin-block-start: var(--s-300);
+      padding: var(--s-300);
+      gap: var(--s-200);
+    }
+    .proofs { display: flex; }
+    .cartouche__headline br { display: none; }
+  }
+</style>
