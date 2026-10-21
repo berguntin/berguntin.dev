@@ -5,11 +5,13 @@ Portafolio personal de Hugo Bermúdez. La carta de la ría de A Coruña es el fo
 ## Desarrollo
 
 ```sh
-npm install
-npm run dev      # http://localhost:4321
-npm run build    # genera dist/
-npm run check    # comprobación de tipos
+pnpm install
+pnpm dev        # http://localhost:4321
+pnpm build      # genera dist/
+pnpm check      # comprobación de tipos
 ```
+
+Requiere Node ≥ 22.12 y pnpm ≥ 10.16. Las normas para trabajar en el proyecto, también para agentes de IA, están en [AGENTS.md](AGENTS.md).
 
 ## Stack
 
