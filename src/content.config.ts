@@ -1,6 +1,7 @@
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
+import { WAYPOINTS } from './scripts/regatta-course';
 
 const result = z.object({
   value: z.string().optional(),
@@ -28,8 +29,8 @@ const recorrido = defineCollection({
     place: z.string().optional(),
     period: z.string(),
     status: z.enum(['en-curso', 'proximamente']).optional(),
-    // Punto de la derrota de la carta de fondo (src/components/SeaChart.astro) y zoom de la cámara.
-    waypoint: z.number().int().min(0),
+    // Punto de la regata (src/scripts/regatta-course.ts) al que va la cámara en este tramo, y su zoom.
+    waypoint: z.enum(WAYPOINTS),
     zoom: z.number().positive().default(1.5),
     ...leg,
     projects: z

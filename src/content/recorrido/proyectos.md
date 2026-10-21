@@ -1,12 +1,12 @@
 ---
 order: 5
 mark: baliza
-badge: '3'
-label: Baliza 3 · Entrenamientos
+badge: '2'
+label: Baliza 2 · sotavento
 title: Proyectos propios
 role: Lo que navego por mi cuenta
-waypoint: 7
-zoom: 1.5
+waypoint: sotavento
+zoom: 1.8
 period: 2024 → hoy
 conditions: Ideas propias para probar arquitecturas, IA aplicada y herramientas que yo mismo quería usar.
 course: Llevo cada proyecto de la idea a un MVP desplegado, con tests y con la IA integrada vía API cuando aporta algo.

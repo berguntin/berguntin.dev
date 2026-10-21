@@ -2,29 +2,24 @@
 // Carta de la ría como fondo fijo. src/scripts/sea.ts mueve la cámara y el Láser según la sección visible.
 import chart from '../data/ria-coruna.json';
 
-// Derrota comprobada contra la costa (todos los tramos van por agua): rodea la Torre de Hércules,
-// pasa por el campo de regatas y entra en la ría. Las secciones apuntan a estos puntos con data-waypoint.
-const route: [number, number][] = [
-  [200, 215],
-  [250, 160],
-  [330, 165],
-  [400, 150],
+// El campo de regatas se fondea en el navegador según el viento real (src/scripts/regatta-course.ts).
+// Aquí solo van el punto de partida del barco, en la bocana de la ría, y los centros candidatos del campo,
+// comprobados contra la costa para cualquier dirección de viento.
+const harbour: [number, number] = [488, 270];
+const courseCenters: [number, number][] = [
+  [440, 130],
+  [430, 140],
   [463, 125],
-  [472, 205],
-  [488, 270],
-  [500, 340],
-  [505, 430],
-  [498, 500],
+  [400, 110],
 ];
-const routePath = 'M' + route.map(([x, y]) => `${x},${y}`).join('L');
 const [torreX, torreY] = chart.points.torre;
-const [courseX, courseY] = chart.points.course;
 ---
 
 <div class="sea" aria-hidden="true">
   <svg
     id="sea"
-    data-route={JSON.stringify(route)}
+    data-harbour={JSON.stringify(harbour)}
+    data-centers={JSON.stringify(courseCenters)}
     data-bbox={JSON.stringify(chart.bbox)}
     data-size={JSON.stringify([chart.width, chart.height])}
   >
@@ -38,10 +33,20 @@ const [courseX, courseY] = chart.points.course;
       </text>
       <circle class="torre-glow" cx={torreX} cy={torreY} r="8" />
       <circle class="torre" cx={torreX} cy={torreY} r="1.6" />
-      <circle class="mark" cx={courseX} cy={courseY - 40} r="2.4" />
-      <path class="route" d={routePath} />
-      <path class="wake" id="sea-wake" d={`M${route[0][0]},${route[0][1]}`} />
-      <g class="boat" id="sea-boat" transform={`translate(${route[0][0]} ${route[0][1]})`}>
+      <g id="sea-course" class="course">
+        <path class="route" id="sea-route" d="" />
+        <line class="course__line" id="sea-start-line" />
+        <line class="course__line" id="sea-finish-line" />
+        <g class="course__marker" id="sea-start-committee"><rect x="-4" y="-2.5" width="8" height="5" rx="1.5" /></g>
+        <g class="course__marker" id="sea-start-pin"><circle class="course__pin" r="2.5" /></g>
+        <g class="course__marker" id="sea-finish-committee"><rect class="course__finish" x="-4" y="-2.5" width="8" height="5" rx="1.5" /></g>
+        <g class="course__marker" id="sea-finish-pin"><circle class="course__pin" r="2.5" /></g>
+        <g class="course__marker" id="sea-m1"><circle class="course__mark" r="4" /><text x="7" y="-5">1</text></g>
+        <g class="course__marker" id="sea-m1a"><circle class="course__mark" r="3" /><text x="6" y="-4">1a</text></g>
+        <g class="course__marker" id="sea-m2"><circle class="course__mark" r="4" /><text x="7" y="-5">2</text></g>
+      </g>
+      <path class="wake" id="sea-wake" d={`M${harbour[0]},${harbour[1]}`} />
+      <g class="boat" id="sea-boat" transform={`translate(${harbour[0]} ${harbour[1]})`}>
         <path d="M0,-10 C3.6,-6 3.9,2 3,10 L-3,10 C-3.9,2 -3.6,-6 0,-10Z" />
         <g id="sea-boom">
           <path d="M0,-4 Q2.6,2 0,8" />
@@ -94,7 +99,15 @@ const [courseX, courseY] = chart.points.course;
     49.5%, 51% { opacity: 0.35; }
     51.1%, 100% { opacity: 0; }
   }
-  .mark { fill: var(--mark); }
+  /* El campo aparece cuando el comité lo ha fondeado con el viento del día. */
+  .course { opacity: 0; transition: opacity 1200ms var(--ease-fluid); }
+  .course.is-set { opacity: 1; }
+  .course__line { stroke: var(--ink); stroke-width: 1px; stroke-dasharray: 2 3; vector-effect: non-scaling-stroke; opacity: 0.7; }
+  .course__marker rect { fill: var(--paper); stroke: var(--ink); stroke-width: 1px; vector-effect: non-scaling-stroke; }
+  .course__marker .course__finish { fill: var(--flag-blue); }
+  .course__pin { fill: var(--mark); opacity: 0.8; }
+  .course__mark { fill: var(--mark); }
+  .course__marker text { fill: var(--mark); font-family: var(--font-mono); font-size: 10px; font-weight: 500; }
   .boat path { fill: var(--paper); stroke: var(--ink); stroke-width: 1.2px; vector-effect: non-scaling-stroke; }
   .boat line { stroke: var(--ink); stroke-width: 1.6px; stroke-linecap: round; vector-effect: non-scaling-stroke; }
 

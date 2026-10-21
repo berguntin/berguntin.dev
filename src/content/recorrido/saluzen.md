@@ -1,12 +1,12 @@
 ---
 order: 4
 mark: baliza
-badge: '2'
-label: Baliza 2
+badge: 1a
+label: Baliza 1a · desmarque
 title: Saluzen
 role: Freelance · Full Stack Developer
-waypoint: 6
-zoom: 1.7
+waypoint: desmarque
+zoom: 2.1
 period: Nov 2025 → hoy
 status: en-curso
 conditions: Un negocio de salud digital que necesitaba una web rápida, pagos online y saber de dónde llega cada cliente.

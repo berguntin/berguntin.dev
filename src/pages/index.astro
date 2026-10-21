@@ -55,4 +55,8 @@ import Contact from '../components/Contact.astro';
     color: var(--ink-muted);
   }
   .footer a { text-underline-offset: 3px; }
+  /* Deja libre la esquina del compás. */
+  @media (min-width: 768px) {
+    .footer { padding-inline-end: 240px; }
+  }
 </style>

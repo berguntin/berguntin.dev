@@ -11,7 +11,7 @@ Orden de precedencia: **lo que diga Hugo en la conversación** > este archivo > 
 3. **No bajes ni esquives `minimumReleaseAge`** (`pnpm-workspace.yaml`, 7 días). Es una defensa contra paquetes comprometidos recién publicados. Si una versión concreta es imprescindible antes de ese plazo, lo decide Hugo.
 4. **No inventes datos de Hugo.** Todo el contenido biográfico sale de su CV de 2026 (*Hugo_Bermudez_CV_2026_Frontend_ES*). Nada de cifras, fechas, clientes ni resultados que no aparezcan ahí. Si falta un dato, pregunta.
 5. **No hagas push a `main` ni abras PRs sin que Hugo lo pida.** Trabaja en ramas.
-6. **Antes de dar algo por terminado**, ejecuta `pnpm check` y `pnpm build` y que ambos salgan sin errores ni avisos.
+6. **Antes de dar algo por terminado**, ejecuta `pnpm check`, `pnpm build` y, si tocas la carta o el campo de regatas, `pnpm check:course`. Todos deben salir sin errores ni avisos.
 
 ## El proyecto
 
@@ -27,6 +27,7 @@ Portafolio personal de **Hugo Bermúdez Guntín**, Frontend Engineer (Vue 3, Nux
 pnpm install   # reproduce el lockfile
 pnpm dev       # http://localhost:4321
 pnpm check     # comprobación de tipos (astro check)
+pnpm check:course  # el campo de regatas cabe en agua con cualquier viento
 pnpm build     # genera dist/
 pnpm preview   # sirve dist/
 ```
@@ -62,38 +63,43 @@ src/
     SignalFlags.astro         Palabras escritas con banderas del Código Internacional de Señales
   content/recorrido/*.md      Un archivo por tramo del recorrido
   scripts/
-    sea.ts                    Cámara de la carta, barco, estela y compás según el scroll
+    sea.ts                    Cámara de la carta, barco, estela, balizas y compás según el scroll
+    regatta-course.ts         Campo de regatas fondeado con el viento y prueba de agua sobre la costa (sin DOM)
     laser.ts                  Geometría compartida del Láser (derrota, viradas, trimado de la vela)
     wind.ts                   Viento real de Open-Meteo con valor de referencia
     reveal.ts                 Aparición de bloques al entrar en pantalla
   data/ria-coruna.json        Costa e isobatas proyectadas (generado, no se edita a mano)
   styles/global.css           Tokens, temas, reset y estilos compartidos
 scripts/build-chart.py        Genera src/data/ria-coruna.json desde OpenStreetMap
+scripts/check-course.mjs      Prueba el campo para 1260 combinaciones de dirección e intensidad de viento
 ```
 
 ## Contenido del recorrido
 
 Cada tramo es un `.md` en `src/content/recorrido/`. El nombre del archivo es el ancla (`#navertia`), así que usa nombres cortos sin números delante. Campos principales (esquema completo en `src/content.config.ts`):
 
-- `order`, `mark` (`salida` | `virada` | `baliza` | `meta`), `badge` (S, V, 1, 2, 3, M), `label`, `title`, `role`, `place`, `period`, `status`.
-- `waypoint` y `zoom`: índice del punto de la derrota de `SeaChart.astro` al que va la cámara en ese tramo y su zoom.
+- `order`, `mark` (`salida` | `virada` | `baliza` | `meta`), `badge` (S, V, 1, 1a, 2, M), `label`, `title`, `role`, `place`, `period`, `status`.
+- `waypoint` y `zoom`: punto de la regata al que va la cámara en ese tramo y su zoom. Los nombres válidos están en `WAYPOINTS` de `src/scripts/regatta-course.ts`: `aproximacion`, `presalida`, `salida`, `virada`, `baliza-1`, `desmarque`, `sotavento`, `llegada` y `fin`.
 - `conditions` (el reto), `course` (qué hizo), `rig` (stack), `arrival` (resultados), `links`.
 - `projects`: proyectos anidados con los mismos campos de tramo.
 - El cuerpo Markdown es una frase de entrada corta con tono marinero.
 
-Orden actual: salida (marketing 2013 → 2021), virada (DAW 2022), Navertia (mar 2022 → nov 2025), Saluzen (freelance desde nov 2025), proyectos propios, GDG Valencia.
+Orden actual y punto de la regata: salida (marketing 2013 → 2021), primera virada (DAW 2022), baliza 1 (Navertia, mar 2022 → nov 2025), desmarque 1a (Saluzen, freelance desde nov 2025), baliza 2 de sotavento (proyectos propios) y llegada (GDG Valencia). El hero es la aproximación, la introducción del recorrido la presalida y el contacto el final.
 
 **Cifras retiradas:** el CV de 2026 ya no recoge "1000+ usuarios concurrentes", "+20% de rendimiento", "menos de 4 semanas", "6 h" ni "~40 mascotas". No las vuelvas a poner.
 
 ## La carta y la navegación
 
 - La costa es real: OpenStreetMap, procesada con `scripts/build-chart.py` (necesita `shapely`). La atribución "© colaboradores de OpenStreetMap" (ODbL) tiene que seguir visible en el pie.
-- La derrota (`route` en `SeaChart.astro`) está **comprobada contra la costa**: todos los tramos van por agua. Si la cambias, verifica cada punto y cada segmento contra el polígono de tierra antes de darlo por bueno.
+- **El campo de regatas es un bastón con desmarque y se fondea con el viento real** (`src/scripts/regatta-course.ts`): salida, ceñida con dos viradas, baliza 1 de barlovento, 1a de desmarque, popa con trasluchada, baliza 2 de sotavento, ceñida y llegada. Todas las balizas se dejan por babor. La línea de salida queda perpendicular al viento y la baliza 1 justo a barlovento. La longitud depende de la intensidad: 0,8 mn con calma y hasta 1,3 mn con viento fuerte. Cada visita puede ver un campo distinto.
+- El campo se comprueba en el navegador contra la costa: la tierra se rasteriza una vez y cada baliza y cada tramo tienen que quedar en agua con margen. Si no cabe, se prueban otros centros (`courseCenters` en `SeaChart.astro`) y se acorta. `pnpm check:course` lo verifica para todas las direcciones; si cambias la geometría, los centros o la carta, tiene que seguir dando 0 campos sin fondear.
+- Primero se monta el campo con el viento de referencia, para que la página funcione al instante, y se vuelve a montar al llegar el viento real. Las balizas aparecen con un fundido cuando el campo está fondeado.
 - Cada sección con `data-waypoint` y `data-zoom` es una parada de la cámara. `sea.ts` interpola entre ellas con un único listener de scroll pasivo limitado con `requestAnimationFrame`, y solo cambia atributos `transform` y el trazado de la estela. No añadas más listeners de scroll; para apariciones usa `IntersectionObserver`.
-- El barco se dibuja a tamaño constante en pantalla aunque la carta haga zoom.
+- El barco y las balizas se dibujan a tamaño constante en pantalla aunque la carta haga zoom.
 - Con `prefers-reduced-motion: reduce` la carta queda quieta y no hay animaciones.
 - **Torre de Hércules:** su característica real es GpD(4)B 20s 23M, grupo de 4 destellos blancos cada 20 s y 23 millas de alcance (fuente: coruna.gal). La animación del faro reproduce ese patrón; no lo cambies.
-- **Viento:** Open-Meteo, coordenadas de la ría, caché de 10 minutos en `sessionStorage` y valor de referencia (NE 12 kn) si falla, siempre indicado como "referencia". El viento orienta la flecha del compás y el trimado de la vela. "Nordés" solo se usa para viento del NE.
+- **Viento:** Open-Meteo, coordenadas de la ría, caché de 10 minutos en `sessionStorage` y valor de referencia (NE 12 kn) si falla, siempre indicado como "referencia". El viento fondea el campo, orienta la flecha del compás y trima la vela. "Nordés" solo se usa para viento del NE.
+- Los números del compás van con coma decimal (`es-ES`).
 
 ## Diseño
 
@@ -131,6 +137,7 @@ El sistema visual sigue `.claude/skills/landing-page-design/SKILL.md`. Lo más i
 4. Mockup minimalista y después **carta como fondo que se recorre con el scroll y compás que gira con el rumbo**: es la dirección actual.
 5. El tracker lateral del recorrido se eliminó porque la carta de fondo cumple esa función.
 6. Se cambió de npm a pnpm con `minimumReleaseAge` de 7 días.
+7. La derrota fija por la ría se sustituyó por una regata real (bastón con desmarque) que se fondea con el viento en directo.
 
 ## Pendiente
 

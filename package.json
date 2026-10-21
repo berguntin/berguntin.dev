@@ -7,7 +7,8 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "check": "astro check"
+    "check": "astro check",
+    "check:course": "node --experimental-strip-types --no-warnings scripts/check-course.mjs"
   },
   "dependencies": {
     "@astrojs/vue": "^7.0.3",

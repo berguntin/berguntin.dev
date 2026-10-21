@@ -2,12 +2,12 @@
 order: 6
 mark: meta
 badge: M
-label: Equipo de tierra
+label: Llegada · equipo de tierra
 title: GDG Valencia
 role: Voluntario
 place: Valencia
-waypoint: 8
-zoom: 1.6
+waypoint: llegada
+zoom: 1.8
 period: Comunidad
 status: en-curso
 conditions: Ninguna regata se gana solo con el regatista. Detrás hay un club, un entrenador y gente que ayuda a botar el barco.
