@@ -5,6 +5,8 @@ badge: '2'
 label: Baliza 2
 title: Saluzen
 role: Freelance · Full Stack Developer
+waypoint: 6
+zoom: 1.7
 period: Nov 2025 → hoy
 status: en-curso
 conditions: Un negocio de salud digital que necesitaba una web rápida, pagos online y saber de dónde llega cada cliente.

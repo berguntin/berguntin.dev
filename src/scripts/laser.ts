@@ -49,7 +49,8 @@ export function boomAngle(heading: number) {
   return side * open;
 }
 
-export function placeBoat(boat: Element, boom: Element, x: number, y: number, heading: number, scale = 1) {
-  boat.setAttribute('transform', `translate(${x.toFixed(2)} ${y.toFixed(2)}) rotate(${heading.toFixed(1)}) scale(${scale})`);
-  boom.setAttribute('transform', `rotate(${boomAngle(heading).toFixed(1)} 0 -4)`);
+/** `windFrom` es la dirección de la que sopla el viento, en el mismo sistema de ángulos que `heading`. */
+export function placeBoat(boat: Element, boom: Element, x: number, y: number, heading: number, scale = 1, windFrom = 0) {
+  boat.setAttribute('transform', `translate(${x.toFixed(2)} ${y.toFixed(2)}) rotate(${heading.toFixed(1)}) scale(${scale.toFixed(3)})`);
+  boom.setAttribute('transform', `rotate(${boomAngle(heading - windFrom).toFixed(1)} 0 -4)`);
 }

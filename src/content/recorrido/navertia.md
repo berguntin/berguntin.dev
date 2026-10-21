@@ -6,6 +6,8 @@ label: Baliza 1
 title: Navertia
 role: Frontend Developer · antes InfortisaLabs
 place: Valencia, híbrido
+waypoint: 4
+zoom: 1.4
 period: Mar 2022 → Nov 2025
 conditions: Productos SaaS, webs B2B y aplicaciones enterprise en producción, para la propia empresa y para clientes externos.
 course: Trabajé con Scrum en un equipo de desarrollo, hice code reviews y mentoría técnica, mejoré los despliegues con Docker y GitHub Actions e incorporé GitHub Copilot a mi flujo y al del equipo.

@@ -1,0 +1,107 @@
+---
+// Carta de la ría como fondo fijo. src/scripts/sea.ts mueve la cámara y el Láser según la sección visible.
+import chart from '../data/ria-coruna.json';
+
+// Derrota comprobada contra la costa (todos los tramos van por agua): rodea la Torre de Hércules,
+// pasa por el campo de regatas y entra en la ría. Las secciones apuntan a estos puntos con data-waypoint.
+const route: [number, number][] = [
+  [200, 215],
+  [250, 160],
+  [330, 165],
+  [400, 150],
+  [463, 125],
+  [472, 205],
+  [488, 270],
+  [500, 340],
+  [505, 430],
+  [498, 500],
+];
+const routePath = 'M' + route.map(([x, y]) => `${x},${y}`).join('L');
+const [torreX, torreY] = chart.points.torre;
+const [courseX, courseY] = chart.points.course;
+---
+
+<div class="sea" aria-hidden="true">
+  <svg
+    id="sea"
+    data-route={JSON.stringify(route)}
+    data-bbox={JSON.stringify(chart.bbox)}
+    data-size={JSON.stringify([chart.width, chart.height])}
+  >
+    <g id="sea-camera">
+      {chart.iso.map((d, i) => <path class={`iso iso--${i}`} d={d} />)}
+      <path class="coast" d={chart.land} />
+      <text class="label" x="150" y="470">A CORUÑA</text>
+      <text class="label" x="740" y="330">OLEIROS</text>
+      <text class="label label--light" x={torreX - 6} y={torreY + 12} text-anchor="end">
+        Torre de Hércules · GpD(4)B 20s
+      </text>
+      <circle class="torre-glow" cx={torreX} cy={torreY} r="8" />
+      <circle class="torre" cx={torreX} cy={torreY} r="1.6" />
+      <circle class="mark" cx={courseX} cy={courseY - 40} r="2.4" />
+      <path class="route" d={routePath} />
+      <path class="wake" id="sea-wake" d={`M${route[0][0]},${route[0][1]}`} />
+      <g class="boat" id="sea-boat" transform={`translate(${route[0][0]} ${route[0][1]})`}>
+        <path d="M0,-10 C3.6,-6 3.9,2 3,10 L-3,10 C-3.9,2 -3.6,-6 0,-10Z" />
+        <g id="sea-boom">
+          <path d="M0,-4 Q2.6,2 0,8" />
+          <line x1="0" y1="-4" x2="0" y2="8" />
+        </g>
+      </g>
+    </g>
+  </svg>
+</div>
+
+<script>
+  import '../scripts/sea';
+</script>
+
+<style>
+  .sea {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    /* Máscara, no fondo: funde la carta hacia la columna de texto. */
+    -webkit-mask-image: linear-gradient(90deg, transparent 18%, #000 52%);
+    mask-image: linear-gradient(90deg, transparent 18%, #000 52%);
+  }
+  .sea svg { display: block; width: 100%; height: 100%; }
+  .coast { fill: none; stroke: var(--coast-line); stroke-width: 1; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .iso { fill: none; stroke: var(--iso-line); stroke-width: 0.9; vector-effect: non-scaling-stroke; }
+  .iso--1 { stroke-dasharray: 5 4; }
+  .route { fill: none; stroke: var(--magenta); stroke-width: 1.2; stroke-dasharray: 3 5; opacity: 0.45; vector-effect: non-scaling-stroke; }
+  .wake {
+    fill: none;
+    stroke: var(--magenta);
+    stroke-width: 1.6;
+    stroke-linejoin: round;
+    opacity: 0.85;
+    vector-effect: non-scaling-stroke;
+  }
+  .label { font-family: var(--font-mono); font-size: 4.2px; letter-spacing: 0.3em; fill: var(--ink-muted); opacity: 0.8; }
+  .label--light { fill: var(--magenta); letter-spacing: 0.04em; font-size: 3.4px; }
+  .torre { fill: var(--magenta); }
+  .torre-glow { fill: var(--magenta); opacity: 0; animation: torre-flash 20s linear infinite; }
+  /* Grupo de 4 destellos cada 20 s: (L0.3 oc3.0) x3, L0.3 oc9.8 */
+  @keyframes torre-flash {
+    0%, 1.5% { opacity: 0.35; }
+    1.6%, 16.4% { opacity: 0; }
+    16.5%, 18% { opacity: 0.35; }
+    18.1%, 32.9% { opacity: 0; }
+    33%, 34.5% { opacity: 0.35; }
+    34.6%, 49.4% { opacity: 0; }
+    49.5%, 51% { opacity: 0.35; }
+    51.1%, 100% { opacity: 0; }
+  }
+  .mark { fill: var(--mark); }
+  .boat path { fill: var(--paper); stroke: var(--ink); stroke-width: 1.2px; vector-effect: non-scaling-stroke; }
+  .boat line { stroke: var(--ink); stroke-width: 1.6px; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+
+  @media (max-width: 767px) {
+    .sea { -webkit-mask-image: none; mask-image: none; opacity: 0.32; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .torre-glow { animation: none; }
+  }
+</style>

@@ -1,0 +1,105 @@
+---
+// Compás del Láser: la rosa gira bajo la línea de fe como en un compás real.
+const ticks = Array.from({ length: 72 }, (_, i) => i * 5);
+---
+
+<aside class="compass" aria-label="Compás del Láser">
+  <svg viewBox="-70 -78 140 148" aria-hidden="true">
+    <path class="compass__lubber" d="M0,-76 L-5,-68 L5,-68Z"></path>
+    <g id="compass-card">
+      <circle class="compass__ring" r="62"></circle>
+      <circle class="compass__ring compass__ring--inner" r="44"></circle>
+      {
+        ticks.map((deg) => (
+          <line
+            class:list={['compass__tick', { 'compass__tick--major': deg % 30 === 0 }]}
+            y1="-62"
+            y2={-62 + (deg % 30 === 0 ? 9 : 4)}
+            transform={`rotate(${deg})`}
+          />
+        ))
+      }
+      {
+        ticks
+          .filter((deg) => deg % 30 === 0 && deg % 90 !== 0)
+          .map((deg) => (
+            <text y="-50" text-anchor="middle" dominant-baseline="middle" transform={`rotate(${deg})`}>
+              {String(deg / 10).padStart(2, '0')}
+            </text>
+          ))
+      }
+      <path class="compass__star" d="M0,-44 L7,-7 L44,0 L7,7 L0,44 L-7,7 L-44,0 L-7,-7Z"></path>
+      <text class="compass__cardinal compass__cardinal--north" y="-32" text-anchor="middle" dominant-baseline="middle">N</text>
+      <text class="compass__cardinal" x="32" text-anchor="middle" dominant-baseline="middle">E</text>
+      <text class="compass__cardinal" y="32" text-anchor="middle" dominant-baseline="middle">S</text>
+      <text class="compass__cardinal" x="-32" text-anchor="middle" dominant-baseline="middle">O</text>
+      <g id="compass-wind" transform="rotate(45)">
+        <path class="compass__wind" d="M0,-60 V-48 M-3,-52 L0,-47 L3,-52"></path>
+      </g>
+    </g>
+  </svg>
+  <div class="compass__readout">
+    <span>Rumbo<b id="compass-heading">045°</b></span>
+    <span id="compass-position">43°23.5′N 8°25.7′W</span>
+    <span class="compass__extra">Corredera <span id="compass-log">0.0</span> mn</span>
+    <span class="compass__extra">Viento <span id="compass-wind-text">NE (referencia)</span></span>
+  </div>
+</aside>
+
+<style>
+  .compass {
+    position: fixed;
+    z-index: 20;
+    right: var(--s-300);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + var(--s-300));
+    display: grid;
+    justify-items: center;
+    gap: var(--s-75);
+    padding: var(--s-100);
+    border: 1px solid var(--rule);
+    border-radius: 16px;
+    background: var(--glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+  .compass svg { display: block; width: 140px; height: 140px; overflow: visible; }
+  .compass__lubber { fill: var(--magenta); }
+  .compass__ring { fill: none; stroke: var(--ink); stroke-width: 1; }
+  .compass__ring--inner { opacity: 0.4; }
+  .compass__tick { stroke: var(--ink); stroke-width: 0.8; opacity: 0.5; }
+  .compass__tick--major { opacity: 1; stroke-width: 1.2; }
+  .compass text { fill: var(--ink); font-size: 9px; font-family: var(--font-mono); }
+  .compass .compass__cardinal { font-size: 12px; font-weight: 500; }
+  .compass .compass__cardinal--north { fill: var(--magenta); }
+  .compass__star { fill: var(--magenta); opacity: 0.14; }
+  .compass__wind { fill: none; stroke: var(--mark); stroke-width: 1.6; stroke-linecap: round; }
+  .compass__readout {
+    display: grid;
+    gap: var(--s-25);
+    text-align: center;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--ink-muted);
+  }
+  .compass__readout b {
+    display: block;
+    color: var(--ink);
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+    font-weight: 500;
+  }
+
+  @media (max-width: 767px) {
+    /* En móvil solo queda la rosa, pequeña, para no tapar el contenido. */
+    .compass {
+      right: var(--s-100);
+      bottom: calc(env(safe-area-inset-bottom, 0px) + var(--s-100));
+      padding: var(--s-50);
+      border-radius: 9999px;
+    }
+    .compass svg { width: 56px; height: 56px; }
+    .compass__readout { display: none; }
+  }
+</style>

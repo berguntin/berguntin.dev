@@ -6,6 +6,8 @@ label: Equipo de tierra
 title: GDG Valencia
 role: Voluntario
 place: Valencia
+waypoint: 8
+zoom: 1.6
 period: Comunidad
 status: en-curso
 conditions: Ninguna regata se gana solo con el regatista. Detrás hay un club, un entrenador y gente que ayuda a botar el barco.

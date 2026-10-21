@@ -1,40 +1,45 @@
 ---
 import { getCollection } from 'astro:content';
-import CourseTracker from './CourseTracker.astro';
 import CourseStop from './CourseStop.astro';
 
 const stops = (await getCollection('recorrido')).sort((a, b) => a.data.order - b.data.order);
 ---
 
-<section class="course" id="recorrido" aria-labelledby="course-title">
+<section class="course" id="recorrido" aria-labelledby="course-title" data-waypoint="1" data-zoom="1.3">
   <header class="course__intro reveal">
     <p class="course__kicker">El recorrido · {stops.length} tramos</p>
     <h2 class="course__title" id="course-title">Aprendí a vender<br /> antes que a programar.</h2>
     <p class="course__lead">
-      Por eso cada interfaz que construyo tiene un objetivo detrás. Este es el recorrido completo, boya a boya, desde la
-      salida hasta hoy.
+      Por eso cada interfaz que construyo tiene un objetivo detrás. Baja y el Láser te lleva tramo a tramo por la ría.
     </p>
+    <nav aria-label="Tramos del recorrido">
+      <ol class="course__index">
+        {
+          stops.map((stop) => (
+            <li>
+              <a href={`#${stop.id}`}>
+                <span class="course__badge" aria-hidden="true">
+                  {stop.data.badge}
+                </span>
+                <span>
+                  {stop.data.title}
+                  <span class="course__period"> · {stop.data.period}</span>
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </nav>
   </header>
 
-  <div class="course__body">
-    <aside class="course__aside">
-      <CourseTracker
-        stops={stops.map((stop) => ({
-          id: stop.id,
-          badge: stop.data.badge,
-          label: stop.data.label,
-          title: stop.data.title,
-        }))}
-      />
-    </aside>
-    <div class="course__stops">
-      {stops.map((entry) => <CourseStop entry={entry} />)}
-    </div>
+  <div class="course__stops">
+    {stops.map((entry) => <CourseStop entry={entry} />)}
   </div>
 </section>
 
 <script>
-  import '../scripts/course';
+  import '../scripts/reveal';
 </script>
 
 <style>
@@ -46,9 +51,9 @@ const stops = (await getCollection('recorrido')).sort((a, b) => a.data.order - b
   }
   .course__intro {
     display: grid;
-    gap: var(--s-200);
+    gap: var(--s-300);
     max-width: 680px;
-    margin-block-end: var(--s-800);
+    margin-block-end: var(--s-900);
   }
   .course__kicker {
     font-family: var(--font-mono);
@@ -65,35 +70,57 @@ const stops = (await getCollection('recorrido')).sort((a, b) => a.data.order - b
     letter-spacing: -0.03em;
   }
   .course__lead {
-    font-size: 1.125rem;
+    font-size: 1.25rem;
     line-height: 1.75rem;
     color: var(--ink-muted);
   }
-  .course__body {
+  .course__index {
     display: grid;
-    grid-template-columns: 280px minmax(0, 1fr);
-    gap: var(--s-700);
-    align-items: start;
+    gap: var(--s-25);
+    margin: 0;
+    padding: 0;
+    list-style: none;
   }
-  .course__aside {
-    position: sticky;
-    top: calc(env(safe-area-inset-top, 0px) + 112px);
+  .course__index a {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-100);
+    padding-block: var(--s-50);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 500ms var(--ease-fluid);
   }
+  .course__index a:hover { color: var(--magenta); }
+  .course__index a:active { transform: translateY(1px); }
+  .course__badge {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: 24px;
+    height: 24px;
+    border: 1.5px solid var(--mark);
+    border-radius: 9999px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
+  .course__period { font-weight: 400; color: var(--ink-muted); }
+  /* Columna de lectura a la izquierda: la derecha queda para la carta de fondo. */
   .course__stops {
     display: grid;
     gap: var(--s-900);
-    min-width: 0;
+    max-width: 680px;
   }
 
   @media (max-width: 1023px) {
     .course { padding-block: var(--s-800); }
-    .course__body { grid-template-columns: minmax(0, 1fr); }
-    .course__aside { display: none; }
     .course__stops { gap: var(--s-800); }
   }
   @media (max-width: 639px) {
     .course__title { font-size: 2.25rem; line-height: 2.5rem; }
     .course__title br { display: none; }
-    .course__intro { margin-block-end: var(--s-600); }
+    .course__intro { margin-block-end: var(--s-700); }
   }
 </style>

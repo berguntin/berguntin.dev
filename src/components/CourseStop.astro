@@ -12,7 +12,13 @@ const { Content } = await render(entry);
 const statusLabel = { 'en-curso': 'En curso', proximamente: 'Próximamente' } as const;
 ---
 
-<article class="stop" id={entry.id} data-stop={entry.id} aria-labelledby={`${entry.id}-title`}>
+<article
+  class="stop"
+  id={entry.id}
+  aria-labelledby={`${entry.id}-title`}
+  data-waypoint={data.waypoint}
+  data-zoom={data.zoom}
+>
   <header class="stop__header reveal">
     <span class={`stop__badge stop__badge--${data.mark}`} aria-hidden="true">{data.badge}</span>
     <div class="stop__heading">

@@ -1,31 +1,27 @@
 ---
 import SignalFlags from './SignalFlags.astro';
-import githubIcon from '@phosphor-icons/core/assets/regular/github-logo.svg?raw';
-import linkedinIcon from '@phosphor-icons/core/assets/regular/linkedin-logo.svg?raw';
 import lighthouseIcon from '@phosphor-icons/core/assets/regular/lighthouse.svg?raw';
 import sunIcon from '@phosphor-icons/core/assets/regular/sun.svg?raw';
 ---
 
-<nav class="nav" aria-label="Principal">
-  <a class="nav__home" href="/" aria-current="page">
-    <SignalFlags word="Hugo" size="sm" />
-    <span class="nav__name">Hugo Bermúdez</span>
-  </a>
-  <span class="nav__divider" aria-hidden="true"></span>
-  <a class="nav__icon" href="https://github.com/berguntin" rel="me noopener" target="_blank">
-    <Fragment set:html={githubIcon} />
-    <span class="sr-only">GitHub (se abre en otra pestaña)</span>
-  </a>
-  <a class="nav__icon" href="https://www.linkedin.com/in/berguntin" rel="me noopener" target="_blank">
-    <Fragment set:html={linkedinIcon} />
-    <span class="sr-only">LinkedIn (se abre en otra pestaña)</span>
-  </a>
-  <button class="nav__icon nav__theme" type="button" id="theme-toggle" aria-pressed="false">
-    <span class="nav__theme-night"><Fragment set:html={lighthouseIcon} /></span>
-    <span class="nav__theme-day"><Fragment set:html={sunIcon} /></span>
-    <span class="sr-only">Modo noche</span>
-  </button>
-</nav>
+<header class="site-header">
+  <nav class="nav" aria-label="Principal">
+    <a class="nav__home" href="#inicio" aria-current="page">
+      <SignalFlags word="Hugo" size="sm" />
+      <span>Hugo Bermúdez</span>
+    </a>
+    <div class="nav__links">
+      <a class="nav__link nav__link--wide" href="#recorrido">Recorrido</a>
+      <a class="nav__link nav__link--wide" href="#proyectos">Proyectos</a>
+      <a class="nav__link" href="#contacto">Contacto</a>
+      <button class="nav__theme" type="button" id="theme-toggle" aria-pressed="false">
+        <span class="nav__theme-night"><Fragment set:html={lighthouseIcon} /></span>
+        <span class="nav__theme-day"><Fragment set:html={sunIcon} /></span>
+        <span class="sr-only">Modo noche</span>
+      </button>
+    </div>
+  </nav>
+</header>
 
 <script>
   const button = document.getElementById('theme-toggle') as HTMLButtonElement;
@@ -47,68 +43,62 @@ import sunIcon from '@phosphor-icons/core/assets/regular/sun.svg?raw';
 </script>
 
 <style>
+  .site-header {
+    position: relative;
+    z-index: 10;
+    max-width: 1200px;
+    margin-inline: auto;
+    padding-inline: var(--s-200);
+    padding-block: calc(env(safe-area-inset-top, 0px) + var(--s-300)) 0;
+  }
   .nav {
-    position: fixed;
-    top: calc(env(safe-area-inset-top, 0px) + var(--s-300));
-    left: 50%;
-    z-index: 50;
-    transform: translateX(-50%);
     display: flex;
     align-items: center;
-    gap: var(--s-50);
-    width: max-content;
-    max-width: calc(100% - var(--s-400));
-    padding: var(--s-50);
-    border: 1px solid var(--rule);
-    border-radius: 9999px;
-    background: var(--glass);
-    backdrop-filter: blur(16px) saturate(1.4);
-    -webkit-backdrop-filter: blur(16px) saturate(1.4);
+    justify-content: space-between;
+    gap: var(--s-200);
   }
   .nav__home {
     display: inline-flex;
     align-items: center;
-    gap: var(--s-75);
-    padding: var(--s-75) var(--s-100);
-    border-radius: 9999px;
-    text-decoration: none;
+    gap: var(--s-100);
     font-size: 0.875rem;
     line-height: 1.25rem;
     font-weight: 600;
-    transition: background-color 500ms var(--ease-fluid);
+    text-decoration: none;
+    white-space: nowrap;
   }
-  .nav__divider {
-    width: 1px;
-    height: var(--s-300);
-    background: var(--rule);
-  }
-  .nav__icon {
-    display: inline-grid;
-    place-items: center;
-    width: 40px;
-    height: 40px;
-    padding: 0;
+  .nav__links { display: flex; align-items: center; gap: var(--s-50); }
+  .nav__link,
+  .nav__theme {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--s-75) var(--s-100);
     border: 0;
     border-radius: 9999px;
     background: transparent;
-    color: var(--ink);
+    color: var(--ink-muted);
+    font: inherit;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    text-decoration: none;
     cursor: pointer;
     transition:
       background-color 500ms var(--ease-fluid),
-      transform 500ms var(--ease-fluid);
+      color 500ms var(--ease-fluid);
   }
-  .nav__icon :global(svg) { width: 20px; height: 20px; }
-  .nav__home:hover,
-  .nav__icon:hover { background: var(--rule); }
-  .nav__icon:active,
-  .nav__home:active { transform: scale(0.96); }
-
+  .nav__theme { width: 40px; height: 40px; padding: 0; }
+  .nav__link:hover,
+  .nav__theme:hover { color: var(--ink); background: var(--rule); }
+  .nav__link:active,
+  .nav__theme:active { transform: scale(0.96); }
+  .nav__theme :global(svg) { width: 20px; height: 20px; }
+  .nav__theme-night { display: contents; }
   .nav__theme-day { display: none; }
   .nav__theme[aria-pressed='true'] .nav__theme-night { display: none; }
   .nav__theme[aria-pressed='true'] .nav__theme-day { display: contents; }
-  .nav__theme-night { display: contents; }
 
-  @media (max-width: 420px) {
-    .nav__name { display: none; }
+  @media (max-width: 639px) {
+    .nav__link--wide { display: none; }
   }
 </style>

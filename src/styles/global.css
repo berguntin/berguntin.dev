@@ -1,5 +1,5 @@
-/* Carta náutica de día (papel) y de noche (pantalla de navegación). Mar profundo = fondo, la tierra en ante,
-   la tinta casi negra y el magenta reservado para luces y rumbos, como en una carta real. */
+/* Carta náutica de día (papel) y de noche (pantalla de navegación): fondo de mar, trazo de costa en tinta
+   y el magenta reservado para luces y rumbos, como en una carta real. */
 @font-face {
   font-family: 'Geist';
   src: url('../../node_modules/@fontsource-variable/geist/files/geist-latin-wght-normal.woff2') format('woff2-variations');
@@ -17,10 +17,7 @@
 
 :root {
   --sea: #f7fafa;
-  --shallow: #cde4ee;
-  --land: #ebdda8;
   --coast: #3c4650;
-  --iso: #7aa1bb;
   --ink: #14202b;
   --ink-muted: #4f5d68;
   --magenta: #b4127a;
@@ -30,7 +27,9 @@
   --rule: rgb(20 32 43 / 0.16);
   --heading-from: #000000;
   --heading-to: #666666;
-  --beam: rgb(255 246 200 / 0);
+  --coast-line: rgb(20 32 43 / 0.24);
+  --iso-line: rgb(40 100 140 / 0.18);
+  --ok: #2f7d57;
 
   /* Banderas del Código Internacional de Señales: son objetos físicos, no cambian con el tema. */
   --flag-red: #d7282f;
@@ -52,10 +51,7 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     --sea: #131209;
-    --shallow: #1c2a31;
-    --land: #2a2619;
     --coast: #8d8a7b;
-    --iso: #35586c;
     --ink: #ece9dc;
     --ink-muted: #a9a698;
     --magenta: #f27cc6;
@@ -65,16 +61,15 @@
     --rule: rgb(236 233 220 / 0.16);
     --heading-from: #ffffff;
     --heading-to: #9b9b9b;
-    --beam: rgb(255 246 200 / 1);
+    --coast-line: rgb(236 233 220 / 0.22);
+    --iso-line: rgb(120 170 200 / 0.16);
+    --ok: #4cc08a;
     color-scheme: dark;
   }
 }
 :root[data-theme='dark'] {
   --sea: #131209;
-  --shallow: #1c2a31;
-  --land: #2a2619;
   --coast: #8d8a7b;
-  --iso: #35586c;
   --ink: #ece9dc;
   --ink-muted: #a9a698;
   --magenta: #f27cc6;
@@ -84,7 +79,9 @@
   --rule: rgb(236 233 220 / 0.16);
   --heading-from: #ffffff;
   --heading-to: #9b9b9b;
-  --beam: rgb(255 246 200 / 1);
+  --coast-line: rgb(236 233 220 / 0.22);
+  --iso-line: rgb(120 170 200 / 0.16);
+  --ok: #4cc08a;
   color-scheme: dark;
 }
 
@@ -92,8 +89,8 @@
 
 html {
   -webkit-text-size-adjust: 100%;
-  /* Deja sitio a la navegación flotante al saltar a un ancla. */
-  scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 104px);
+  /* Margen al saltar a un ancla. */
+  scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 24px);
 }
 @media (prefers-reduced-motion: no-preference) {
   html { scroll-behavior: smooth; }
@@ -164,3 +161,24 @@ a { color: inherit; }
   transform: translateY(64px);
   filter: blur(12px);
 }
+
+/* Botón principal, compartido por el hero y el contacto. */
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-75);
+  padding: var(--s-75) var(--s-100);
+  border-radius: 4px;
+  background: var(--ink);
+  color: var(--sea);
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    transform 500ms var(--ease-fluid),
+    background-color 500ms var(--ease-fluid);
+}
+.button:hover { background: var(--magenta); transform: translateY(-1px); }
+.button:active { transform: scale(0.98); }
+.button svg { width: 20px; height: 20px; flex: none; }

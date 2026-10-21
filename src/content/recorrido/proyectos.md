@@ -5,6 +5,8 @@ badge: '3'
 label: Baliza 3 · Entrenamientos
 title: Proyectos propios
 role: Lo que navego por mi cuenta
+waypoint: 7
+zoom: 1.5
 period: 2024 → hoy
 conditions: Ideas propias para probar arquitecturas, IA aplicada y herramientas que yo mismo quería usar.
 course: Llevo cada proyecto de la idea a un MVP desplegado, con tests y con la IA integrada vía API cuando aporta algo.
