@@ -1,0 +1,99 @@
+---
+import { getCollection } from 'astro:content';
+import CourseTracker from './CourseTracker.astro';
+import CourseStop from './CourseStop.astro';
+
+const stops = (await getCollection('recorrido')).sort((a, b) => a.data.order - b.data.order);
+---
+
+<section class="course" id="recorrido" aria-labelledby="course-title">
+  <header class="course__intro reveal">
+    <p class="course__kicker">El recorrido · {stops.length} tramos</p>
+    <h2 class="course__title" id="course-title">Aprendí a vender<br /> antes que a programar.</h2>
+    <p class="course__lead">
+      Por eso cada interfaz que construyo tiene un objetivo detrás. Este es el recorrido completo, boya a boya, desde la
+      salida hasta hoy.
+    </p>
+  </header>
+
+  <div class="course__body">
+    <aside class="course__aside">
+      <CourseTracker
+        stops={stops.map((stop) => ({
+          id: stop.id,
+          badge: stop.data.badge,
+          label: stop.data.label,
+          title: stop.data.title,
+        }))}
+      />
+    </aside>
+    <div class="course__stops">
+      {stops.map((entry) => <CourseStop entry={entry} />)}
+    </div>
+  </div>
+</section>
+
+<script>
+  import '../scripts/course';
+</script>
+
+<style>
+  .course {
+    max-width: 1200px;
+    margin-inline: auto;
+    padding-inline: var(--s-200);
+    padding-block: var(--s-900);
+  }
+  .course__intro {
+    display: grid;
+    gap: var(--s-200);
+    max-width: 680px;
+    margin-block-end: var(--s-800);
+  }
+  .course__kicker {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--magenta);
+  }
+  .course__title {
+    font-size: 3rem;
+    line-height: 1;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+  }
+  .course__lead {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+    color: var(--ink-muted);
+  }
+  .course__body {
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr);
+    gap: var(--s-700);
+    align-items: start;
+  }
+  .course__aside {
+    position: sticky;
+    top: calc(env(safe-area-inset-top, 0px) + 112px);
+  }
+  .course__stops {
+    display: grid;
+    gap: var(--s-900);
+    min-width: 0;
+  }
+
+  @media (max-width: 1023px) {
+    .course { padding-block: var(--s-800); }
+    .course__body { grid-template-columns: minmax(0, 1fr); }
+    .course__aside { display: none; }
+    .course__stops { gap: var(--s-800); }
+  }
+  @media (max-width: 639px) {
+    .course__title { font-size: 2.25rem; line-height: 2.5rem; }
+    .course__title br { display: none; }
+    .course__intro { margin-block-end: var(--s-600); }
+  }
+</style>

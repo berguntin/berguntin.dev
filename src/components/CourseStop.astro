@@ -1,0 +1,167 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { render } from 'astro:content';
+import CourseLog from './CourseLog.astro';
+
+interface Props {
+  entry: CollectionEntry<'recorrido'>;
+}
+const { entry } = Astro.props;
+const { data } = entry;
+const { Content } = await render(entry);
+const statusLabel = { 'en-curso': 'En curso', proximamente: 'Próximamente' } as const;
+---
+
+<article class="stop" id={entry.id} data-stop={entry.id} aria-labelledby={`${entry.id}-title`}>
+  <header class="stop__header reveal">
+    <span class={`stop__badge stop__badge--${data.mark}`} aria-hidden="true">{data.badge}</span>
+    <div class="stop__heading">
+      <p class="stop__meta">
+        <span>{data.label}</span>
+        <span>{data.period}</span>
+        {data.place && <span>{data.place}</span>}
+        {data.status && <span class="stop__status">{statusLabel[data.status]}</span>}
+      </p>
+      <h3 class="stop__title" id={`${entry.id}-title`}>{data.title}</h3>
+      {data.role && <p class="stop__role">{data.role}</p>}
+    </div>
+  </header>
+
+  <div class="stop__lead reveal"><Content /></div>
+
+  <div class="reveal"><CourseLog leg={data} /></div>
+
+  {
+    data.projects.length > 0 && (
+      <ol class="stop__projects" aria-label={`Proyectos en ${data.title}`}>
+        {data.projects.map((project, i) => (
+          <li class="project reveal">
+            <header class="project__header">
+              <h4 class="project__title">
+                <span class="project__number">
+                  {data.badge}.{i + 1}
+                </span>
+                {project.title}
+              </h4>
+              {project.tag && <span class="project__tag">{project.tag}</span>}
+            </header>
+            <CourseLog leg={project} compact />
+          </li>
+        ))}
+      </ol>
+    )
+  }
+</article>
+
+<style>
+  .stop {
+    display: grid;
+    gap: var(--s-300);
+  }
+  .stop__header {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--s-200);
+  }
+  .stop__badge {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: 40px;
+    height: 40px;
+    margin-block-start: var(--s-50);
+    border: 2px solid var(--mark);
+    border-radius: 9999px;
+    background: var(--mark);
+    color: var(--paper);
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    line-height: 1.5rem;
+    font-weight: 600;
+  }
+  .stop__badge--salida,
+  .stop__badge--virada,
+  .stop__badge--meta {
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .stop__heading { display: grid; gap: var(--s-50); min-width: 0; }
+  .stop__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-50) var(--s-100);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+  .stop__meta span + span::before {
+    content: '·';
+    margin-inline-end: var(--s-100);
+  }
+  .stop__status { color: var(--magenta); }
+  .stop__title {
+    font-size: 2.25rem;
+    line-height: 2.5rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .stop__role { color: var(--ink-muted); }
+  .stop__lead {
+    max-width: 640px;
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+  }
+  .stop__lead :global(p) { text-wrap: pretty; }
+
+  .stop__projects {
+    display: grid;
+    gap: var(--s-200);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .project {
+    display: grid;
+    gap: var(--s-200);
+    padding: var(--s-300);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    background: var(--paper);
+  }
+  .project__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--s-75) var(--s-100);
+  }
+  .project__title {
+    margin: 0;
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+    font-weight: 600;
+  }
+  .project__number {
+    margin-inline-end: var(--s-75);
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--mark);
+  }
+  .project__tag {
+    padding: var(--s-25) var(--s-75);
+    border: 1px solid var(--magenta);
+    border-radius: 9999px;
+    color: var(--magenta);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
+
+  @media (max-width: 639px) {
+    .stop__title { font-size: 1.875rem; line-height: 2.25rem; }
+    .project { padding: var(--s-200); }
+  }
+</style>

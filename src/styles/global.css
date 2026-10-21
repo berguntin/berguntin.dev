@@ -90,7 +90,14 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
-html { -webkit-text-size-adjust: 100%; }
+html {
+  -webkit-text-size-adjust: 100%;
+  /* Deja sitio a la navegación flotante al saltar a un ancla. */
+  scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 104px);
+}
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
 
 body {
   margin: 0;
@@ -143,4 +150,17 @@ a { color: inherit; }
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Aparición al hacer scroll: pesada y suave, solo en elementos que el script marca como pendientes. */
+.reveal {
+  transition:
+    opacity 900ms var(--ease-fluid),
+    transform 900ms var(--ease-fluid),
+    filter 900ms var(--ease-fluid);
+}
+.reveal.is-pending {
+  opacity: 0;
+  transform: translateY(64px);
+  filter: blur(12px);
 }

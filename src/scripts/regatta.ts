@@ -1,4 +1,5 @@
 // Viento real en la ría de A Coruña y el Láser navegando el campo de regatas.
+import { buildLegs, locate, placeBoat, shortestTurn, type Point } from './laser';
 
 const RIA = { latitude: 43.39, longitude: -8.37 };
 const CACHE_KEY = 'wind:ria-coruna';
@@ -96,7 +97,7 @@ function applyWind(wind: Wind) {
     const el = document.getElementById(id);
     if (!el) continue;
     const current = parseFloat(el.style.getPropertyValue('--wind')) || 45;
-    const delta = ((((wind.direction - current) % 360) + 540) % 360) - 180;
+    const delta = shortestTurn(current, wind.direction);
     el.style.setProperty('--wind', `${current + delta}deg`);
   }
   renderReadout(wind);
@@ -105,43 +106,14 @@ function applyWind(wind: Wind) {
 
 // --- Láser ---
 
-type Point = [number, number];
-
 function sailBoat(svg: SVGSVGElement, getWind: () => Wind) {
   const boat = document.getElementById('boat');
   const boom = document.getElementById('boat-boom');
   if (!boat || !boom) return;
-  const track: Point[] = JSON.parse(svg.dataset.track ?? '[]');
-  const legs = track.slice(0, -1).map((from, i) => {
-    const to = track[i + 1];
-    const length = Math.hypot(to[0] - from[0], to[1] - from[1]);
-    // 0° = proa al viento (hacia arriba en el sistema local del campo).
-    const heading = (Math.atan2(to[0] - from[0], -(to[1] - from[1])) * 180) / Math.PI;
-    return { from, to, length, heading };
-  });
-  const total = legs.reduce((sum, leg) => sum + leg.length, 0);
-
+  const legs = buildLegs(JSON.parse(svg.dataset.track ?? '[]') as Point[]);
   const place = (distance: number) => {
-    let d = distance % total;
-    let index = 0;
-    while (d > legs[index].length) d -= legs[index++].length;
-    const leg = legs[index];
-    const t = d / leg.length;
-    const x = leg.from[0] + (leg.to[0] - leg.from[0]) * t;
-    const y = leg.from[1] + (leg.to[1] - leg.from[1]) * t;
-
-    // Virada suave en los últimos píxeles de cada bordo.
-    const next = legs[(index + 1) % legs.length];
-    const turn = Math.max(0, 1 - (leg.length - d) / 6);
-    const delta = ((((next.heading - leg.heading) % 360) + 540) % 360) - 180;
-    const heading = leg.heading + delta * turn * 0.5;
-
-    // La botavara se abre a sotavento: cerrada en ceñida, abierta en popa.
-    const offWind = Math.min(Math.abs(((heading + 540) % 360) - 180), 180);
-    const open = 8 + (Math.max(0, offWind - 45) / 135) * 77;
-    const side = ((heading % 360) + 360) % 360 < 180 ? -1 : 1;
-    boat.setAttribute('transform', `translate(${x.toFixed(2)} ${y.toFixed(2)}) rotate(${heading.toFixed(1)}) scale(1.3)`);
-    boom.setAttribute('transform', `rotate(${(side * open).toFixed(1)} 0 -4)`);
+    const { x, y, heading } = locate(legs, distance);
+    placeBoat(boat, boom, x, y, heading, 1.3);
   };
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
