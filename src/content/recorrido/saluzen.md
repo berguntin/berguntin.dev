@@ -1,12 +1,12 @@
 ---
 order: 4
 mark: baliza
-badge: 1a
-label: Baliza 1a · desmarque
+badge: '2'
+label: Baliza 2 · Punta Torrella
 title: Saluzen
 role: Freelance · Full Stack Developer
-waypoint: desmarque
-zoom: 2.1
+waypoint: baliza-2
+zoom: 1.6
 period: Nov 2025 → hoy
 status: en-curso
 conditions: Un negocio de salud digital que necesitaba una web rápida, pagos online y saber de dónde llega cada cliente.

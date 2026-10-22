@@ -11,13 +11,13 @@ Orden de precedencia: **lo que diga Hugo en la conversación** > este archivo > 
 3. **No bajes ni esquives `minimumReleaseAge`** (`pnpm-workspace.yaml`, 7 días). Es una defensa contra paquetes comprometidos recién publicados. Si una versión concreta es imprescindible antes de ese plazo, lo decide Hugo.
 4. **No inventes datos de Hugo.** Todo el contenido biográfico sale de su CV de 2026 (*Hugo_Bermudez_CV_2026_Frontend_ES*). Nada de cifras, fechas, clientes ni resultados que no aparezcan ahí. Si falta un dato, pregunta.
 5. **No hagas push a `main` ni abras PRs sin que Hugo lo pida.** Trabaja en ramas.
-6. **Antes de dar algo por terminado**, ejecuta `pnpm check`, `pnpm build` y, si tocas la carta o el campo de regatas, `pnpm check:course`. Todos deben salir sin errores ni avisos.
+6. **Antes de dar algo por terminado**, ejecuta `pnpm check`, `pnpm build` y, si tocas la carta o la costera, `pnpm check:route`. Todos deben salir sin errores ni avisos.
 
 ## El proyecto
 
 Portafolio personal de **Hugo Bermúdez Guntín**, Frontend Engineer (Vue 3, Nuxt, TypeScript, IA aplicada). Se publicará en `https://berguntin.dev`. El público son personas que contratan o buscan perfiles frontend.
 
-**Concepto:** Hugo es gallego, se crió en el mar y navega en **Láser**. La web es una travesía por la **ría de A Coruña**: la carta náutica es el fondo fijo de la página y, al hacer scroll, un Láser navega por ella. Su trayectoria se presenta como un recorrido de regata (salida, virada, balizas, equipo de tierra).
+**Concepto:** Hugo es gallego, se crió en el mar y navega en **Láser**. La web es una **costera de la Torre de Hércules a Sada**: la carta náutica del golfo Ártabro es el fondo fijo de la página y, al hacer scroll, un Láser la navega. Su trayectoria se presenta como los tramos de esa costera (salida, virada, balizas, llegada).
 
 **Principio rector:** la web tiene que decir "soy developer" antes que parecer una app de mapas. Lo náutico es la personalidad, no el contenido. El texto siempre gana a la carta.
 
@@ -27,7 +27,7 @@ Portafolio personal de **Hugo Bermúdez Guntín**, Frontend Engineer (Vue 3, Nux
 pnpm install   # reproduce el lockfile
 pnpm dev       # http://localhost:4321
 pnpm check     # comprobación de tipos (astro check)
-pnpm check:course  # el campo de regatas cabe en agua con cualquier viento
+pnpm check:route   # la costera, las balizas y las líneas están en agua
 pnpm build     # genera dist/
 pnpm preview   # sirve dist/
 ```
@@ -42,7 +42,7 @@ Requiere Node ≥ 22.12 (lo exige Astro 7) y pnpm ≥ 10.16.
 - **CSS propio con tokens**, sin Tailwind. El CSS se inyecta inline (`build.inlineStylesheets: 'always'`).
 - **Fuentes autoalojadas**: Geist y Geist Mono desde `@fontsource-variable`, solo el subconjunto latino.
 - **Iconos**: Phosphor (`@phosphor-icons/core`), importados como SVG en crudo (`?raw`).
-- **Peso objetivo**: la página ronda los 30 KB comprimida. Si un cambio lo dispara, justifícalo.
+- **Peso objetivo**: la página ronda los 28 KB comprimida. Si un cambio lo dispara, justifícalo.
 - **Contenido en Markdown** con Content Collections (`src/content.config.ts`).
 
 ## Estructura
@@ -52,7 +52,7 @@ src/
   pages/index.astro           Página única: carta, navegación, hero, recorrido, contacto, pie y compás
   layouts/Base.astro          <head>, metadatos, precarga de fuente, tema guardado, enlace de salto
   components/
-    SeaChart.astro            Carta fija de fondo (costa, isobatas, Torre, derrota, estela, barco)
+    SeaChart.astro            Carta fija de fondo (costa, isobatas, Torre, costera, balizas, estela, barco)
     Compass.astro             Compás fijo: rosa que gira con el rumbo, posición, corredera, viento
     SiteNav.astro             Navegación y botón de modo noche (icono de faro)
     Hero.astro                Hero minimalista
@@ -64,41 +64,41 @@ src/
   content/recorrido/*.md      Un archivo por tramo del recorrido
   scripts/
     sea.ts                    Cámara de la carta, barco, estela, balizas y compás según el scroll
-    regatta-course.ts         Campo de regatas fondeado con el viento y prueba de agua sobre la costa (sin DOM)
     laser.ts                  Geometría compartida del Láser (derrota, viradas, trimado de la vela)
     wind.ts                   Viento real de Open-Meteo con valor de referencia
     reveal.ts                 Aparición de bloques al entrar en pantalla
-  data/ria-coruna.json        Costa e isobatas proyectadas (generado, no se edita a mano)
+  data/golfo-artabro.json     Costa, tierra e isobatas proyectadas (generado, no se edita a mano)
+  data/costera.json           Derrota, balizas, líneas de salida y llegada y rótulos, en lon/lat
   styles/global.css           Tokens, temas, reset y estilos compartidos
-scripts/build-chart.py        Genera src/data/ria-coruna.json desde OpenStreetMap
-scripts/check-course.mjs      Prueba el campo para 1260 combinaciones de dirección e intensidad de viento
+scripts/build-chart.py        Genera src/data/golfo-artabro.json desde OpenStreetMap
+scripts/check-route.mjs       Comprueba la costera contra la costa y los nombres de los puntos
 ```
 
 ## Contenido del recorrido
 
 Cada tramo es un `.md` en `src/content/recorrido/`. El nombre del archivo es el ancla (`#navertia`), así que usa nombres cortos sin números delante. Campos principales (esquema completo en `src/content.config.ts`):
 
-- `order`, `mark` (`salida` | `virada` | `baliza` | `meta`), `badge` (S, V, 1, 1a, 2, M), `label`, `title`, `role`, `place`, `period`, `status`.
-- `waypoint` y `zoom`: punto de la regata al que va la cámara en ese tramo y su zoom. Los nombres válidos están en `WAYPOINTS` de `src/scripts/regatta-course.ts`: `aproximacion`, `presalida`, `salida`, `virada`, `baliza-1`, `desmarque`, `sotavento`, `llegada` y `fin`.
+- `order`, `mark` (`salida` | `virada` | `baliza` | `meta`), `badge` (S, V, 1, 2, 3, M), `label`, `title`, `role`, `place`, `period`, `status`.
+- `waypoint` y `zoom`: punto de la costera al que va la cámara en ese tramo y su zoom. Los nombres válidos están en `WAYPOINTS` de `src/content.config.ts` y tienen que existir en `src/data/costera.json`: `aproximacion`, `presalida`, `salida`, `virada`, `baliza-1`, `baliza-2`, `baliza-3`, `llegada` y `fin`.
 - `conditions` (el reto), `course` (qué hizo), `rig` (stack), `arrival` (resultados), `links`.
 - `projects`: proyectos anidados con los mismos campos de tramo.
 - El cuerpo Markdown es una frase de entrada corta con tono marinero.
 
-Orden actual y punto de la regata: salida (marketing 2013 → 2021), primera virada (DAW 2022), baliza 1 (Navertia, mar 2022 → nov 2025), desmarque 1a (Saluzen, freelance desde nov 2025), baliza 2 de sotavento (proyectos propios) y llegada (GDG Valencia). El hero es la aproximación, la introducción del recorrido la presalida y el contacto el final.
+Orden actual y punto de la costera: salida frente a la Torre (marketing 2013 → 2021), primera virada en la bocana de la ría de A Coruña (DAW 2022), baliza 1 en Seixo Branco (Navertia, mar 2022 → nov 2025), baliza 2 en Punta Torrella, a la entrada de la ría de Ares e Betanzos (Saluzen, freelance desde nov 2025), baliza 3 en San Mamede (proyectos propios) y llegada en Sada (GDG Valencia). El hero es la aproximación, la introducción del recorrido la presalida y el contacto el final, con la cámara alejándose para ver toda la costera.
 
 **Cifras retiradas:** el CV de 2026 ya no recoge "1000+ usuarios concurrentes", "+20% de rendimiento", "menos de 4 semanas", "6 h" ni "~40 mascotas". No las vuelvas a poner.
 
 ## La carta y la navegación
 
-- La costa es real: OpenStreetMap, procesada con `scripts/build-chart.py` (necesita `shapely`). La atribución "© colaboradores de OpenStreetMap" (ODbL) tiene que seguir visible en el pie.
-- **El campo de regatas es un bastón con desmarque y se fondea con el viento real** (`src/scripts/regatta-course.ts`): salida, ceñida con dos viradas, baliza 1 de barlovento, 1a de desmarque, popa con trasluchada, baliza 2 de sotavento, ceñida y llegada. Todas las balizas se dejan por babor. La línea de salida queda perpendicular al viento y la baliza 1 justo a barlovento. La longitud depende de la intensidad: 0,8 mn con calma y hasta 1,3 mn con viento fuerte. Cada visita puede ver un campo distinto.
-- El campo se comprueba en el navegador contra la costa: la tierra se rasteriza una vez y cada baliza y cada tramo tienen que quedar en agua con margen. Si no cabe, se prueban otros centros (`courseCenters` en `SeaChart.astro`) y se acorta. `pnpm check:course` lo verifica para todas las direcciones; si cambias la geometría, los centros o la carta, tiene que seguir dando 0 campos sin fondear.
-- Primero se monta el campo con el viento de referencia, para que la página funcione al instante, y se vuelve a montar al llegar el viento real. Las balizas aparecen con un fundido cuando el campo está fondeado.
+- La costa es real: OpenStreetMap, procesada con `scripts/build-chart.py` (necesita `shapely`). Cubre de Punta Herminia a la ría de Ares e Betanzos. La atribución "© colaboradores de OpenStreetMap" (ODbL) tiene que seguir visible en el pie.
+- `golfo-artabro.json` trae dos trazados: `land` (polígonos cerrados por el marco, para saber qué es agua) y `coastline` (solo la costa real, que es lo que se dibuja, con coordenadas enteras para que pese poco). No dibujes `land`: se verían los bordes del marco al alejar la cámara.
+- **La costera es fija y real** (`src/data/costera.json`, en lon/lat): salida al norte de la Torre de Hércules, virada en la bocana de la ría de A Coruña, baliza 1 frente a Punta do Seixo Branco, costa norte de Oleiros, baliza 2 frente a Punta Torrella, entrada en la ría de Ares e Betanzos, baliza 3 frente a Punta de San Mamede y llegada a la entrada del puerto de Sada. Unas 9,8 mn. Se descartaron la derrota que entraba en la ría de A Coruña y la regata de bastón fondeada con el viento.
+- `pnpm check:route` rasteriza la tierra y comprueba que cada tramo pasa a más de 0,08 mn de la costa, que balizas, comités y boyas están en agua y que los nombres de los puntos coinciden con `WAYPOINTS`. Si mueves un punto, tiene que seguir pasando.
 - Cada sección con `data-waypoint` y `data-zoom` es una parada de la cámara. `sea.ts` interpola entre ellas con un único listener de scroll pasivo limitado con `requestAnimationFrame`, y solo cambia atributos `transform` y el trazado de la estela. No añadas más listeners de scroll; para apariciones usa `IntersectionObserver`.
 - El barco y las balizas se dibujan a tamaño constante en pantalla aunque la carta haga zoom.
 - Con `prefers-reduced-motion: reduce` la carta queda quieta y no hay animaciones.
 - **Torre de Hércules:** su característica real es GpD(4)B 20s 23M, grupo de 4 destellos blancos cada 20 s y 23 millas de alcance (fuente: coruna.gal). La animación del faro reproduce ese patrón; no lo cambies.
-- **Viento:** Open-Meteo, coordenadas de la ría, caché de 10 minutos en `sessionStorage` y valor de referencia (NE 12 kn) si falla, siempre indicado como "referencia". El viento fondea el campo, orienta la flecha del compás y trima la vela. "Nordés" solo se usa para viento del NE.
+- **Viento:** Open-Meteo, coordenadas de la ría, caché de 10 minutos en `sessionStorage` y valor de referencia (NE 12 kn) si falla, siempre indicado como "referencia". El viento orienta la flecha del compás y trima la vela; no cambia la derrota. "Nordés" solo se usa para viento del NE.
 - Los números del compás van con coma decimal (`es-ES`).
 
 ## Diseño
@@ -137,7 +137,8 @@ El sistema visual sigue `.claude/skills/landing-page-design/SKILL.md`. Lo más i
 4. Mockup minimalista y después **carta como fondo que se recorre con el scroll y compás que gira con el rumbo**: es la dirección actual.
 5. El tracker lateral del recorrido se eliminó porque la carta de fondo cumple esa función.
 6. Se cambió de npm a pnpm con `minimumReleaseAge` de 7 días.
-7. La derrota fija por la ría se sustituyó por una regata real (bastón con desmarque) que se fondea con el viento en directo.
+7. Se probó una regata de bastón con desmarque fondeada con el viento en directo. Se descartó.
+8. Dirección actual: costera de la Torre de Hércules a Sada por la ría de Ares e Betanzos, con la carta ampliada al golfo Ártabro.
 
 ## Pendiente
 

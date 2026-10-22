@@ -1,40 +1,35 @@
-// La carta de fondo sigue al lector. El campo de regatas se fondea con el viento real del día
-// (regatta-course.ts) y cada sección de la página es un punto de esa regata: el Láser, la estela,
-// la cámara y el compás se interpolan entre ellos según el scroll.
+// La carta de fondo sigue al lector por la costera de la Torre de Hércules a Sada. Cada sección de la
+// página es un punto con nombre de la derrota: el Láser, la estela, la cámara y el compás se interpolan
+// entre ellos según el scroll. El viento real trima la vela y orienta la flecha del compás.
 import { buildLegs, locate, placeBoat, type Point } from './laser';
-import { buildCourse, makeWaterTest, parseRings, type Course, type Waypoint } from './regatta-course';
 import { compassPoint, fetchWind, REFERENCE_WIND, type Wind } from './wind';
 
 const byId = (id: string) => document.getElementById(id);
 const svg = byId('sea') as SVGSVGElement | null;
 const camera = byId('sea-camera');
-const coast = document.querySelector<SVGPathElement>('#sea .coast');
 const boat = byId('sea-boat');
 const boom = byId('sea-boom');
 const wake = byId('sea-wake');
-const routeEl = byId('sea-route');
-const courseEl = byId('sea-course');
 
-if (svg && camera && coast && boat && boom && wake && routeEl && courseEl) {
+if (svg && camera && boat && boom && wake) {
+  const route = JSON.parse(svg.dataset.route ?? '[]') as Point[];
+  const named = JSON.parse(svg.dataset.stops ?? '{}') as Record<string, number>;
   const [S, W, N, E] = JSON.parse(svg.dataset.bbox ?? '[0,0,0,0]') as number[];
   const [chartW, chartH] = JSON.parse(svg.dataset.size ?? '[1,1]') as [number, number];
-  const harbour = JSON.parse(svg.dataset.harbour ?? '[0,0]') as Point;
-  const centers = JSON.parse(svg.dataset.centers ?? '[]') as Point[];
   // Unidades de carta por milla náutica (1′ de latitud).
   const unitsPerMile = chartH / ((N - S) * 60);
-  const isWater = makeWaterTest(parseRings(coast.getAttribute('d') ?? ''), [chartW, chartH]);
+  const legs = buildLegs(route);
+  const cumulative = [0];
+  for (const leg of legs) cumulative.push(cumulative[cumulative.length - 1] + leg.length);
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   const sections = [...document.querySelectorAll<HTMLElement>('[data-waypoint]')];
-  const markers = (['start-committee', 'start-pin', 'finish-committee', 'finish-pin', 'm1', 'm1a', 'm2'] as const).map(
-    (name) => ({ name, el: byId(`sea-${name}`) }),
-  );
+  const markers = [...svg.querySelectorAll<SVGGElement>('[data-at]')].map((el) => ({
+    el,
+    at: JSON.parse(el.dataset.at ?? '[0,0]') as Point,
+  }));
 
   let wind: Wind = REFERENCE_WIND;
-  let course: Course | null = null;
-  let route: Point[] = [harbour, harbour];
-  let legs = buildLegs(route);
-  let cumulative = [0, 0];
   let stops: { y: number; distance: number; zoom: number }[] = [];
   let width = 0;
   let height = 0;
@@ -44,21 +39,11 @@ if (svg && camera && coast && boat && boom && wake && routeEl && courseEl) {
   const dm = (value: number, positive: string, negative: string) => {
     const abs = Math.abs(value);
     const deg = Math.floor(abs);
-    const min = (abs - deg) * 60;
-    return `${deg}°${decimal(min).padStart(4, '0')}′${value >= 0 ? positive : negative}`;
+    return `${deg}°${decimal((abs - deg) * 60).padStart(4, '0')}′${value >= 0 ? positive : negative}`;
   };
   const setText = (id: string, text: string) => {
     const el = byId(id);
     if (el) el.textContent = text;
-  };
-
-  const markerPoint = (name: (typeof markers)[number]['name']): Point | null => {
-    if (!course) return null;
-    if (name === 'start-committee') return course.start.committee;
-    if (name === 'start-pin') return course.start.pin;
-    if (name === 'finish-committee') return course.finish.committee;
-    if (name === 'finish-pin') return course.finish.pin;
-    return course.marks[name];
   };
 
   const measure = () => {
@@ -66,14 +51,11 @@ if (svg && camera && coast && boat && boom && wake && routeEl && courseEl) {
     height = window.innerHeight;
     mobile = width < 768;
     svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
-    stops = sections.map((section) => {
-      const index = course?.stops[section.dataset.waypoint as Waypoint] ?? 0;
-      return {
-        y: Math.max(0, section.getBoundingClientRect().top + window.scrollY - height * 0.35),
-        distance: cumulative[Math.min(index, cumulative.length - 1)],
-        zoom: Number(section.dataset.zoom ?? 1.4),
-      };
-    });
+    stops = sections.map((section) => ({
+      y: Math.max(0, section.getBoundingClientRect().top + window.scrollY - height * 0.35),
+      distance: cumulative[named[section.dataset.waypoint ?? ''] ?? 0],
+      zoom: Number(section.dataset.zoom ?? 1.4),
+    }));
     if (stops[0]) stops[0].y = 0;
   };
 
@@ -99,10 +81,7 @@ if (svg && camera && coast && boat && boom && wake && routeEl && courseEl) {
 
     // Barco y balizas mantienen su tamaño en pantalla aunque la carta haga zoom.
     placeBoat(boat, boom, x, py, heading, 1.3 / scale, wind.direction);
-    for (const { name, el } of markers) {
-      const p = markerPoint(name);
-      if (el && p) el.setAttribute('transform', `translate(${p[0]} ${p[1]}) scale(${1 / scale})`);
-    }
+    for (const { el, at } of markers) el.setAttribute('transform', `translate(${at[0]} ${at[1]}) scale(${1 / scale})`);
 
     // Estela: la derrota hasta el punto donde está el barco.
     let passed = 0;
@@ -126,51 +105,19 @@ if (svg && camera && coast && boat && boom && wake && routeEl && courseEl) {
     requestAnimationFrame(draw);
   };
 
-  // El comité fondea el campo: eje al viento, longitud según la intensidad y todo en agua.
-  const anchorCourse = (next: Wind) => {
-    const built = buildCourse({
-      windFrom: next.direction,
-      windSpeed: next.speed,
-      centers,
-      harbour,
-      unitsPerMile,
-      isWater,
-    });
-    if (!built) return false;
-    course = built;
-    route = built.route;
-    legs = buildLegs(route);
-    cumulative = [0];
-    for (const leg of legs) cumulative.push(cumulative[cumulative.length - 1] + leg.length);
-    routeEl.setAttribute('d', 'M' + route.slice(1).map(([rx, ry]) => `${rx.toFixed(1)},${ry.toFixed(1)}`).join('L'));
-    const line = (id: string, a: Point, b: Point) => {
-      const el = byId(id);
-      el?.setAttribute('x1', String(a[0]));
-      el?.setAttribute('y1', String(a[1]));
-      el?.setAttribute('x2', String(b[0]));
-      el?.setAttribute('y2', String(b[1]));
-    };
-    line('sea-start-line', built.start.pin, built.start.committee);
-    line('sea-finish-line', built.finish.pin, built.finish.committee);
-    setText('compass-course', `Campo a ${String(Math.round(built.windFrom) % 360).padStart(3, '0')}° · ${decimal(built.lengthMiles)} mn`);
-    measure();
-    return true;
-  };
-
   const applyWind = (next: Wind) => {
-    if (anchorCourse(next)) wind = next;
-    else anchorCourse(wind);
-    byId('compass-wind')?.setAttribute('transform', `rotate(${wind.direction})`);
+    wind = next;
+    byId('compass-wind')?.setAttribute('transform', `rotate(${next.direction})`);
     setText(
       'compass-wind-text',
-      wind.time ? `${compassPoint(wind.direction)} ${wind.speed} kn` : `${compassPoint(wind.direction)} (referencia)`,
+      next.time ? `${compassPoint(next.direction)} ${next.speed} kn` : `${compassPoint(next.direction)} (referencia)`,
     );
-    courseEl.classList.add('is-set');
     request();
   };
 
-  // Primero el campo de referencia, para que la página funcione al instante; luego el del viento real.
-  anchorCourse(REFERENCE_WIND);
+  setText('compass-course', `Costera a Sada · ${decimal(cumulative[cumulative.length - 1] / unitsPerMile)} mn`);
+  measure();
+  applyWind(REFERENCE_WIND);
   draw();
   window.addEventListener('scroll', request, { passive: true });
   window.addEventListener('resize', () => {

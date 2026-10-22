@@ -1,6 +1,6 @@
 # berguntin.dev
 
-Portafolio personal de Hugo Bermúdez. La carta de la ría de A Coruña es el fondo de la página: al hacer scroll, un Láser navega por ella y un compás marca su rumbo.
+Portafolio personal de Hugo Bermúdez. La carta del golfo Ártabro es el fondo de la página: al hacer scroll, un Láser navega una costera de la Torre de Hércules a Sada y un compás marca su rumbo.
 
 ## Desarrollo
 
@@ -16,8 +16,9 @@ Requiere Node ≥ 22.12 y pnpm ≥ 10.16. Las normas para trabajar en el proyect
 ## Stack
 
 - [Astro](https://astro.build) como base, sin JavaScript por defecto. Vue queda configurado para las islas interactivas que lo necesiten.
-- La carta es SVG generado a partir de la costa de OpenStreetMap (`scripts/build-chart.py` → `src/data/ria-coruna.json`).
-- El recorrido está en `src/content/recorrido/*.md`. Cada tramo indica su punto de la derrota (`waypoint`) y el zoom de la cámara.
+- La carta es SVG generado a partir de la costa de OpenStreetMap (`scripts/build-chart.py` → `src/data/golfo-artabro.json`).
+- La costera está en `src/data/costera.json` y se valida con `pnpm check:route`.
+- El recorrido está en `src/content/recorrido/*.md`. Cada tramo indica su punto de la costera (`waypoint`) y el zoom de la cámara.
 - Viento en directo de [Open-Meteo](https://open-meteo.com), con un valor de referencia si falla la petición.
 - Geist y Geist Mono autoalojadas, iconos de Phosphor.
 

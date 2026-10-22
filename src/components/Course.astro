@@ -5,12 +5,12 @@ import CourseStop from './CourseStop.astro';
 const stops = (await getCollection('recorrido')).sort((a, b) => a.data.order - b.data.order);
 ---
 
-<section class="course" id="recorrido" aria-labelledby="course-title" data-waypoint="presalida" data-zoom="1.6">
+<section class="course" id="recorrido" aria-labelledby="course-title" data-waypoint="presalida" data-zoom="1.8">
   <header class="course__intro reveal">
     <p class="course__kicker">El recorrido · {stops.length} tramos</p>
     <h2 class="course__title" id="course-title">Aprendí a vender<br /> antes que a programar.</h2>
     <p class="course__lead">
-      Por eso cada interfaz que construyo tiene un objetivo detrás. Baja y el Láser corre la regata tramo a tramo. El campo se fondea con el viento real de hoy en la ría, así que cada visita es un poco distinta.
+      Por eso cada interfaz que construyo tiene un objetivo detrás. Es una costera de la Torre de Hércules a Sada: baja y el Láser la navega tramo a tramo, con el viento que sopla hoy en la ría.
     </p>
     <nav aria-label="Tramos del recorrido">
       <ol class="course__index">
