@@ -32,6 +32,7 @@ const [torreX, torreY] = chart.points.torre;
 ---
 
 <div class="sea" aria-hidden="true">
+  <canvas id="sea-wind" class="sea__wind"></canvas>
   <svg
     id="sea"
     data-fixed={JSON.stringify(fixed)}
@@ -110,7 +111,9 @@ const [torreX, torreY] = chart.points.torre;
     -webkit-mask-image: linear-gradient(90deg, transparent 18%, #000 52%);
     mask-image: linear-gradient(90deg, transparent 18%, #000 52%);
   }
-  .sea svg { display: block; width: 100%; height: 100%; }
+  .sea svg { position: relative; display: block; width: 100%; height: 100%; }
+  /* Partículas de viento (src/scripts/wind-field.ts), debajo de la costera y del barco. */
+  .sea__wind { position: absolute; inset: 0; width: 100%; height: 100%; }
   .coast { fill: none; stroke: var(--coast-line); stroke-width: 1; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
   .iso { fill: none; stroke: var(--iso-line); stroke-width: 0.9; vector-effect: non-scaling-stroke; }
   .iso--1 { stroke-dasharray: 5 4; }

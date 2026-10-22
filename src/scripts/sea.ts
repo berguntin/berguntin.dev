@@ -5,6 +5,7 @@
 import { sailCostera, type FixedPoint } from './costera';
 import { buildLegs, locate, placeBoat, type Point } from './laser';
 import { compassPoint, fetchWind, REFERENCE_WIND, type Wind } from './wind';
+import { startWindField, type View } from './wind-field';
 
 const byId = (id: string) => document.getElementById(id);
 const svg = byId('sea') as SVGSVGElement | null;
@@ -19,6 +20,8 @@ if (svg && camera && boat && boom && wake) {
   const [chartW, chartH] = JSON.parse(svg.dataset.size ?? '[1,1]') as [number, number];
   // Unidades de carta por milla náutica (1′ de latitud).
   const unitsPerMile = chartH / ((N - S) * 60);
+  let view: View | null = null;
+  let field: { redraw: () => void } | null = null;
   let route: Point[] = [];
   let named: Record<string, number> = {};
   let legs = buildLegs([[0, 0], [0, 0]]);
@@ -81,6 +84,8 @@ if (svg && camera && boat && boom && wake) {
     const anchorX = mobile ? width * 0.5 : width * 0.7;
     const anchorY = mobile ? height * 0.62 : height * 0.5;
     camera.setAttribute('transform', `translate(${anchorX} ${anchorY}) scale(${scale}) translate(${-x} ${-py})`);
+    view = { scale, anchorX, anchorY, x, y: py, width, height };
+    field?.redraw();
 
     // Barco y balizas mantienen su tamaño en pantalla aunque la carta haga zoom.
     placeBoat(boat, boom, x, py, heading, 1.6 / scale, wind.direction);
@@ -143,6 +148,9 @@ if (svg && camera && boat && boom && wake) {
 
   applyWind(REFERENCE_WIND);
   draw();
+  // Partículas de viento sobre la carta, en el lienzo que hay debajo del barco.
+  const canvas = byId('sea-wind') as HTMLCanvasElement | null;
+  if (canvas) field = startWindField(canvas, () => view, () => wind, reduced);
   window.addEventListener('scroll', request, { passive: true });
   window.addEventListener('resize', () => {
     measure();

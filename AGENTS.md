@@ -67,6 +67,7 @@ src/
     costera.ts                Cómo se navega la costera con el viento: salida y bordos de ceñida (sin DOM)
     laser.ts                  Geometría compartida del Láser (derrota, viradas, trimado de la vela)
     wind.ts                   Viento real de Open-Meteo con valor de referencia
+    wind-field.ts             Partículas de viento sobre la carta, al estilo de Windy (canvas)
     reveal.ts                 Aparición de bloques al entrar en pantalla
   data/golfo-artabro.json     Costa, tierra e isobatas proyectadas (generado, no se edita a mano)
   data/costera.json           Puntos de paso fijos, balizas, línea de llegada y rótulos, en lon/lat
@@ -109,6 +110,7 @@ Orden actual y punto de la costera: salida frente a la Torre (marketing 2013 →
 - **Torre de Hércules:** su característica real es GpD(4)B 20s 23M, grupo de 4 destellos blancos cada 20 s y 23 millas de alcance (fuente: coruna.gal). La animación del faro reproduce ese patrón; no lo cambies.
 - **Viento:** Open-Meteo, coordenadas de la ría, caché de 10 minutos en `sessionStorage` y valor de referencia (NE 12 kn) si falla, siempre indicado como "referencia". El viento orienta la línea de salida, decide los bordos de ceñida, trima la vela y mueve la flecha del compás. La página se pinta con el viento de referencia y se recalcula al llegar el real. "Nordés" solo se usa para viento del NE.
 - Los números del compás van con coma decimal (`es-ES`).
+- **El compás es de a bordo**: la rosa gira bajo la línea de fe y el viento se lee relativo a la proa. Para leer el viento sobre la carta (norte arriba) están las **partículas de viento** (`wind-field.ts`): trazos cortos en un `<canvas>` debajo de la costera y del barco que avanzan hacia donde sopla el viento real, más rápido cuanto más fuerte. Viven en coordenadas de carta y siguen a la cámara; se pausan con la pestaña oculta. Con movimiento reducido se pinta una rejilla de flechas fijas. El color sale del token `--wind-streak`. Mantenlas tenues: no pueden competir con el texto.
 
 ## Diseño
 
