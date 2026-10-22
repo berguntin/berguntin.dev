@@ -64,15 +64,18 @@ export function sailCostera(fixed: FixedPoint[], windFrom: number, unitsPerMile:
   const committee = add(start, mul(across, miles(0.06)));
   const pin = add(start, mul(across, -miles(0.06)));
 
-  // Rumbo al cruzar la línea. Si el primer tramo es de ceñida o de través, en ceñida y con la amura
-  // que apunta más hacia él; si es de popa, ya con el rumbo del tramo. Antes, la aproximación es
-  // un través que llega desde sotavento.
+  // Rumbo al cruzar la línea, que siempre es perpendicular al viento:
+  // - si el primer tramo va hacia barlovento, en ceñida y con la amura que apunta más hacia él,
+  //   llegando desde sotavento en un través;
+  // - si va hacia sotavento, en popa cerrada (cruzando la línea en perpendicular), llegando desde
+  //   barlovento en una aleta desde el lado contrario al primer tramo, para girar siempre hacia el mismo lado.
   const firstLeg = bearingOf(start, fixed[startIndex + 1].at);
   const offWind = turn(windFrom, firstLeg);
   const upwindStart = Math.abs(offWind) < 90;
-  const side = offWind < 0 ? -1 : 1; // -1: amurado a estribor, 1: a babor
-  const crossing = upwindStart ? windFrom + side * CLOSE_HAULED : firstLeg;
-  const approach = upwindStart ? windFrom + side * 100 : firstLeg;
+  const side = offWind < 0 ? -1 : 1;
+  const downwind = windFrom + 180;
+  const crossing = upwindStart ? windFrom + side * CLOSE_HAULED : downwind;
+  const approach = upwindStart ? windFrom + side * 100 : downwind + side * 50;
   const presalida = add(start, mul(unit(crossing), -miles(0.15)));
   const aproximacion = add(presalida, mul(unit(approach), -miles(0.25)));
 

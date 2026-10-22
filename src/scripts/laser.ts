@@ -52,5 +52,8 @@ export function boomAngle(heading: number) {
 /** `windFrom` es la dirección de la que sopla el viento, en el mismo sistema de ángulos que `heading`. */
 export function placeBoat(boat: Element, boom: Element, x: number, y: number, heading: number, scale = 1, windFrom = 0) {
   boat.setAttribute('transform', `translate(${x.toFixed(2)} ${y.toFixed(2)}) rotate(${heading.toFixed(1)}) scale(${scale.toFixed(3)})`);
-  boom.setAttribute('transform', `rotate(${boomAngle(heading - windFrom).toFixed(1)} 0 -4)`);
+  // La vela se dibuja con la bolsa hacia estribor; cuando la botavara se abre a babor se refleja
+  // para que la bolsa quede siempre a sotavento.
+  const angle = boomAngle(heading - windFrom);
+  boom.setAttribute('transform', `rotate(${angle.toFixed(1)} 0 -4)${angle > 0 ? ' scale(-1 1)' : ''}`);
 }
