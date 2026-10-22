@@ -1,6 +1,8 @@
 // La carta de fondo sigue al lector por la costera de la Torre de Hércules a Sada. Cada sección de la
 // página es un punto con nombre de la derrota: el Láser, la estela, la cámara y el compás se interpolan
-// entre ellos según el scroll. El viento real trima la vela y orienta la flecha del compás.
+// entre ellos según el scroll. El viento real orienta la línea de salida, decide los bordos de ceñida,
+// trima la vela y mueve la flecha del compás.
+import { sailCostera, type FixedPoint } from './costera';
 import { buildLegs, locate, placeBoat, type Point } from './laser';
 import { compassPoint, fetchWind, REFERENCE_WIND, type Wind } from './wind';
 
@@ -12,19 +14,20 @@ const boom = byId('sea-boom');
 const wake = byId('sea-wake');
 
 if (svg && camera && boat && boom && wake) {
-  const route = JSON.parse(svg.dataset.route ?? '[]') as Point[];
-  const named = JSON.parse(svg.dataset.stops ?? '{}') as Record<string, number>;
+  const fixed = JSON.parse(svg.dataset.fixed ?? '[]') as FixedPoint[];
   const [S, W, N, E] = JSON.parse(svg.dataset.bbox ?? '[0,0,0,0]') as number[];
   const [chartW, chartH] = JSON.parse(svg.dataset.size ?? '[1,1]') as [number, number];
   // Unidades de carta por milla náutica (1′ de latitud).
   const unitsPerMile = chartH / ((N - S) * 60);
-  const legs = buildLegs(route);
-  const cumulative = [0];
-  for (const leg of legs) cumulative.push(cumulative[cumulative.length - 1] + leg.length);
+  let route: Point[] = [];
+  let named: Record<string, number> = {};
+  let legs = buildLegs([[0, 0], [0, 0]]);
+  let cumulative = [0, 0];
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   const sections = [...document.querySelectorAll<HTMLElement>('[data-waypoint]')];
   const markers = [...svg.querySelectorAll<SVGGElement>('[data-at]')].map((el) => ({
+    id: el.id,
     el,
     at: JSON.parse(el.dataset.at ?? '[0,0]') as Point,
   }));
@@ -105,8 +108,31 @@ if (svg && camera && boat && boom && wake) {
     requestAnimationFrame(draw);
   };
 
+  // Navega la costera con un viento: salida perpendicular a él y bordos en los tramos de ceñida.
+  const sail = (windFrom: number) => {
+    const sailed = sailCostera(fixed, windFrom, unitsPerMile);
+    route = sailed.route;
+    named = sailed.stops;
+    legs = buildLegs(route);
+    cumulative = [0];
+    for (const leg of legs) cumulative.push(cumulative[cumulative.length - 1] + leg.length);
+    byId('sea-route')?.setAttribute('d', 'M' + route.map(([rx, ry]) => `${rx.toFixed(1)},${ry.toFixed(1)}`).join('L'));
+    const startLine = byId('sea-start-line');
+    startLine?.setAttribute('x1', String(sailed.start.pin[0]));
+    startLine?.setAttribute('y1', String(sailed.start.pin[1]));
+    startLine?.setAttribute('x2', String(sailed.start.committee[0]));
+    startLine?.setAttribute('y2', String(sailed.start.committee[1]));
+    for (const marker of markers) {
+      if (marker.id === 'sea-start-committee') marker.at = sailed.start.committee;
+      if (marker.id === 'sea-start-pin') marker.at = sailed.start.pin;
+    }
+    setText('compass-course', `Costera a Sada · ${decimal(cumulative[cumulative.length - 1] / unitsPerMile)} mn`);
+    measure();
+  };
+
   const applyWind = (next: Wind) => {
     wind = next;
+    sail(next.direction);
     byId('compass-wind')?.setAttribute('transform', `rotate(${next.direction})`);
     setText(
       'compass-wind-text',
@@ -115,8 +141,6 @@ if (svg && camera && boat && boom && wake) {
     request();
   };
 
-  setText('compass-course', `Costera a Sada · ${decimal(cumulative[cumulative.length - 1] / unitsPerMile)} mn`);
-  measure();
   applyWind(REFERENCE_WIND);
   draw();
   window.addEventListener('scroll', request, { passive: true });

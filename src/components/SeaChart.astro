@@ -3,6 +3,8 @@
 // src/scripts/sea.ts mueve la cámara y el Láser por la derrota según la sección visible.
 import chart from '../data/golfo-artabro.json';
 import costera from '../data/costera.json';
+import { sailCostera } from '../scripts/costera';
+import { REFERENCE_WIND } from '../scripts/wind';
 
 // Proyección equirectangular: la misma que usa scripts/build-chart.py.
 const [S, W, N, E] = chart.bbox as [number, number, number, number];
@@ -11,16 +13,19 @@ const project = (lon: number, lat: number): [number, number] => [
   Number((((N - lat) / (N - S)) * chart.height).toFixed(1)),
 ];
 
-// Derrota comprobada contra la costa con `pnpm check:route`. Las secciones apuntan a los puntos con nombre.
-const route = costera.route.map((p) => project(p.lon, p.lat));
-const stops = Object.fromEntries(costera.route.flatMap((p, i) => (p.name ? [[p.name, i]] : [])));
-const routePath = 'M' + route.map(([x, y]) => `${x},${y}`).join('L');
+// Puntos de paso fijos. La salida y los bordos de ceñida dependen del viento: aquí se dibujan con el de
+// referencia y sea.ts los recalcula con el real. `pnpm check:route` lo comprueba con cualquier viento.
+const fixed = costera.route.map((p) => ({ name: p.name, at: project(p.lon, p.lat) }));
+const unitsPerMile = chart.height / ((N - S) * 60);
+const sailed = sailCostera(fixed, REFERENCE_WIND.direction, unitsPerMile);
+const route = sailed.route;
+const start = sailed.start;
+const routePath = 'M' + route.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join('L');
 const marks = costera.marks.map((m) => ({ ...m, at: project(m.lon, m.lat) }));
 const line = (ends: { committee: number[]; pin: number[] }) => ({
   committee: project(ends.committee[0], ends.committee[1]),
   pin: project(ends.pin[0], ends.pin[1]),
 });
-const start = line(costera.start);
 const finish = line(costera.finish);
 const labels = costera.labels.map((l) => ({ ...l, at: project(l.lon, l.lat) }));
 const [torreX, torreY] = chart.points.torre;
@@ -29,8 +34,7 @@ const [torreX, torreY] = chart.points.torre;
 <div class="sea" aria-hidden="true">
   <svg
     id="sea"
-    data-route={JSON.stringify(route)}
-    data-stops={JSON.stringify(stops)}
+    data-fixed={JSON.stringify(fixed)}
     data-bbox={JSON.stringify(chart.bbox)}
     data-size={JSON.stringify([chart.width, chart.height])}
   >
@@ -49,11 +53,22 @@ const [torreX, torreY] = chart.points.torre;
       </text>
       <circle class="torre-glow" cx={torreX} cy={torreY} r="8" />
       <circle class="torre" cx={torreX} cy={torreY} r="1.6" />
-      <path class="route" d={routePath} />
-      <line class="course__line" x1={start.pin[0]} y1={start.pin[1]} x2={start.committee[0]} y2={start.committee[1]} />
+      <path class="route" id="sea-route" d={routePath} />
+      <line
+        class="course__line"
+        id="sea-start-line"
+        x1={start.pin[0]}
+        y1={start.pin[1]}
+        x2={start.committee[0]}
+        y2={start.committee[1]}
+      />
       <line class="course__line" x1={finish.pin[0]} y1={finish.pin[1]} x2={finish.committee[0]} y2={finish.committee[1]} />
-      <g class="course__marker" data-at={JSON.stringify(start.committee)}><rect x="-4" y="-2.5" width="8" height="5" rx="1.5" /></g>
-      <g class="course__marker" data-at={JSON.stringify(start.pin)}><circle class="course__pin" r="2.5" /></g>
+      <g class="course__marker" id="sea-start-committee" data-at={JSON.stringify(start.committee)}>
+        <rect x="-4" y="-2.5" width="8" height="5" rx="1.5" />
+      </g>
+      <g class="course__marker" id="sea-start-pin" data-at={JSON.stringify(start.pin)}>
+        <circle class="course__pin" r="2.5" />
+      </g>
       <g class="course__marker" data-at={JSON.stringify(finish.committee)}>
         <rect class="course__finish" x="-4" y="-2.5" width="8" height="5" rx="1.5" />
       </g>

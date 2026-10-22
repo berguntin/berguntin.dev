@@ -64,14 +64,15 @@ src/
   content/recorrido/*.md      Un archivo por tramo del recorrido
   scripts/
     sea.ts                    Cámara de la carta, barco, estela, balizas y compás según el scroll
+    costera.ts                Cómo se navega la costera con el viento: salida y bordos de ceñida (sin DOM)
     laser.ts                  Geometría compartida del Láser (derrota, viradas, trimado de la vela)
     wind.ts                   Viento real de Open-Meteo con valor de referencia
     reveal.ts                 Aparición de bloques al entrar en pantalla
   data/golfo-artabro.json     Costa, tierra e isobatas proyectadas (generado, no se edita a mano)
-  data/costera.json           Derrota, balizas, líneas de salida y llegada y rótulos, en lon/lat
+  data/costera.json           Puntos de paso fijos, balizas, línea de llegada y rótulos, en lon/lat
   styles/global.css           Tokens, temas, reset y estilos compartidos
 scripts/build-chart.py        Genera src/data/golfo-artabro.json desde OpenStreetMap
-scripts/check-route.mjs       Comprueba la costera contra la costa y los nombres de los puntos
+scripts/check-route.mjs       Navega la costera con 180 direcciones de viento y la comprueba contra la costa
 ```
 
 ## Contenido del recorrido
@@ -92,13 +93,18 @@ Orden actual y punto de la costera: salida frente a la Torre (marketing 2013 →
 
 - La costa es real: OpenStreetMap, procesada con `scripts/build-chart.py` (necesita `shapely`). Cubre de Punta Herminia a la ría de Ares e Betanzos. La atribución "© colaboradores de OpenStreetMap" (ODbL) tiene que seguir visible en el pie.
 - `golfo-artabro.json` trae dos trazados: `land` (polígonos cerrados por el marco, para saber qué es agua) y `coastline` (solo la costa real, que es lo que se dibuja, con coordenadas enteras para que pese poco). No dibujes `land`: se verían los bordes del marco al alejar la cámara.
-- **La costera es fija y real** (`src/data/costera.json`, en lon/lat): salida al norte de la Torre de Hércules, virada en la bocana de la ría de A Coruña, baliza 1 frente a Punta do Seixo Branco, costa norte de Oleiros, baliza 2 frente a Punta Torrella, entrada en la ría de Ares e Betanzos, baliza 3 frente a Punta de San Mamede y llegada a la entrada del puerto de Sada. Unas 9,8 mn. Se descartaron la derrota que entraba en la ría de A Coruña y la regata de bastón fondeada con el viento.
-- `pnpm check:route` rasteriza la tierra y comprueba que cada tramo pasa a más de 0,08 mn de la costa, que balizas, comités y boyas están en agua y que los nombres de los puntos coinciden con `WAYPOINTS`. Si mueves un punto, tiene que seguir pasando.
+- **Los puntos de paso de la costera son fijos y reales** (`src/data/costera.json`, en lon/lat): salida al norte de la Torre de Hércules, virada en la bocana de la ría de A Coruña, baliza 1 frente a Punta do Seixo Branco, costa norte de Oleiros, baliza 2 frente a Punta Torrella, entrada en la ría de Ares e Betanzos, baliza 3 frente a Punta de San Mamede y llegada a la entrada del puerto de Sada. Unas 9,8 mn. Se descartaron la derrota que entraba en la ría de A Coruña y la regata de bastón fondeada con el viento.
+- **Cómo se navega depende del viento real** (`src/scripts/costera.ts`), como en una regata de verdad:
+  - La línea de salida es perpendicular al viento, con el comité en el extremo de estribor. El barco llega desde sotavento en un través y cruza la línea en ceñida a 42° del viento, con la amura que apunta más hacia el primer tramo. Si el primer tramo es de popa, cruza ya con el rumbo del tramo.
+  - Un tramo cuyo destino queda a menos de 42° del viento se remonta en bordos de ceñida a 42°, empezando por la amura más parecida al rumbo que traía el barco y sin separarse más de 0,1 mn de la línea directa. El resto de tramos se navegan directos.
+  - La sección de la primera virada sigue al barco en su primera virada real antes de la baliza 1; si no hay ninguna, va al punto `virada` del JSON.
+  - `aproximacion` y `presalida` no están en el JSON: se calculan con el viento.
+- `pnpm check:route` rasteriza la tierra, navega la costera con viento de cada 2° (180 casos) y comprueba que todos los tramos y bordos pasan a más de 0,06 mn de la costa, que la línea de salida, las balizas y la llegada están en agua y que los nombres de los puntos coinciden con `WAYPOINTS`. Si mueves un punto o cambias la lógica de navegación, tiene que seguir pasando.
 - Cada sección con `data-waypoint` y `data-zoom` es una parada de la cámara. `sea.ts` interpola entre ellas con un único listener de scroll pasivo limitado con `requestAnimationFrame`, y solo cambia atributos `transform` y el trazado de la estela. No añadas más listeners de scroll; para apariciones usa `IntersectionObserver`.
 - El barco y las balizas se dibujan a tamaño constante en pantalla aunque la carta haga zoom.
 - Con `prefers-reduced-motion: reduce` la carta queda quieta y no hay animaciones.
 - **Torre de Hércules:** su característica real es GpD(4)B 20s 23M, grupo de 4 destellos blancos cada 20 s y 23 millas de alcance (fuente: coruna.gal). La animación del faro reproduce ese patrón; no lo cambies.
-- **Viento:** Open-Meteo, coordenadas de la ría, caché de 10 minutos en `sessionStorage` y valor de referencia (NE 12 kn) si falla, siempre indicado como "referencia". El viento orienta la flecha del compás y trima la vela; no cambia la derrota. "Nordés" solo se usa para viento del NE.
+- **Viento:** Open-Meteo, coordenadas de la ría, caché de 10 minutos en `sessionStorage` y valor de referencia (NE 12 kn) si falla, siempre indicado como "referencia". El viento orienta la línea de salida, decide los bordos de ceñida, trima la vela y mueve la flecha del compás. La página se pinta con el viento de referencia y se recalcula al llegar el real. "Nordés" solo se usa para viento del NE.
 - Los números del compás van con coma decimal (`es-ES`).
 
 ## Diseño

@@ -8,7 +8,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
-    "check:route": "node scripts/check-route.mjs"
+    "check:route": "node --experimental-strip-types --no-warnings scripts/check-route.mjs"
   },
   "dependencies": {
     "@astrojs/vue": "^7.0.3",

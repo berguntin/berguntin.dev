@@ -1,11 +1,9 @@
 {
   "name": "Costera Torre de Hércules → Sada",
+  "note": "Puntos de paso fijos. La aproximación, la presalida, la línea de salida y los bordos de ceñida se calculan con el viento en src/scripts/costera.ts.",
   "route": [
-    {"name": "aproximacion", "lon": -8.418, "lat": 43.399},
-    {"name": "presalida", "lon": -8.407, "lat": 43.401},
     {"name": "salida", "lon": -8.396, "lat": 43.399},
-    {"name": "virada", "lon": -8.378, "lat": 43.409},
-    {"name": null, "lon": -8.362, "lat": 43.402},
+    {"name": "virada", "lon": -8.373, "lat": 43.402},
     {"name": "baliza-1", "lon": -8.35, "lat": 43.405},
     {"name": null, "lon": -8.33, "lat": 43.4135},
     {"name": null, "lon": -8.315, "lat": 43.412},
@@ -28,6 +26,5 @@
     {"text": "ARES", "lon": -8.236, "lat": 43.433},
     {"text": "GOLFO ÁRTABRO", "lon": -8.33, "lat": 43.445}
   ],
-  "start": {"committee": [-8.3935, 43.4005], "pin": [-8.3985, 43.3975]},
   "finish": {"committee": [-8.2385, 43.3675], "pin": [-8.2435, 43.3645]}
 }

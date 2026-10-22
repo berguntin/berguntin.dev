@@ -1,7 +1,10 @@
-// Comprueba la costera de src/data/costera.json contra la costa de la carta:
-// derrota, balizas y líneas de salida y llegada en agua con margen, y nombres de los puntos
-// iguales a los que usa el contenido. Uso: pnpm check:route
+// Comprueba la costera contra la costa de la carta para cualquier viento: navega la derrota de
+// src/data/costera.json con src/scripts/costera.ts cada 2° de dirección y verifica que la salida,
+// la presalida, los bordos de ceñida, las balizas y la llegada quedan en agua con margen, y que los
+// nombres de los puntos coinciden con los que usa el contenido. Uso: pnpm check:route
 import { readFileSync } from 'node:fs';
+
+const { sailCostera } = await import('../src/scripts/costera.ts');
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), 'utf8');
 const chart = JSON.parse(read('../src/data/golfo-artabro.json'));
@@ -50,38 +53,49 @@ const clear = (p, miles) =>
   );
 
 const errors = [];
-const ROUTE_MARGIN = 0.08; // mn
+const ROUTE_MARGIN = 0.06; // mn, los bordos se separan algo de la línea directa
 const MARK_MARGIN = 0.05; // mn
 
-const route = costera.route.map((p) => project(p.lon, p.lat));
-for (let i = 0; i < route.length - 1; i++) {
-  const [a, b] = [route[i], route[i + 1]];
+const legClear = (a, b) => {
   const steps = Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / 2);
   for (let s = 0; s <= steps; s++) {
     const p = [a[0] + ((b[0] - a[0]) * s) / steps, a[1] + ((b[1] - a[1]) * s) / steps];
-    if (!clear(p, ROUTE_MARGIN)) {
-      errors.push(`El tramo ${i} → ${i + 1} pasa a menos de ${ROUTE_MARGIN} mn de tierra`);
-      break;
-    }
+    if (!clear(p, ROUTE_MARGIN)) return false;
   }
+  return true;
+};
+
+const fixedRoute = costera.route.map((p) => ({ name: p.name, at: project(p.lon, p.lat) }));
+let longest = 0;
+let mostTacks = 0;
+for (let wind = 0; wind < 360; wind += 2) {
+  const sailed = sailCostera(fixedRoute, wind, unitsPerMile);
+  const bad = sailed.route.findIndex((p, i) => i > 0 && !legClear(sailed.route[i - 1], p));
+  if (bad > 0) errors.push(`Con viento de ${wind}° el tramo ${bad - 1} → ${bad} pasa a menos de ${ROUTE_MARGIN} mn de tierra`);
+  for (const [name, p] of Object.entries(sailed.start)) {
+    if (!clear(p, MARK_MARGIN)) errors.push(`Con viento de ${wind}° el extremo ${name} de la línea de salida toca tierra`);
+  }
+  const miles = sailed.route.slice(1).reduce((sum, p, i) => sum + Math.hypot(p[0] - sailed.route[i][0], p[1] - sailed.route[i][1]), 0) / unitsPerMile;
+  longest = Math.max(longest, miles);
+  mostTacks = Math.max(mostTacks, sailed.route.length - fixedRoute.length - 2);
 }
+
 const fixed = [
   ...costera.marks.map((m) => [`baliza ${m.label}`, m.lon, m.lat]),
-  ['comité de salida', ...costera.start.committee],
-  ['boya de salida', ...costera.start.pin],
   ['comité de llegada', ...costera.finish.committee],
   ['boya de llegada', ...costera.finish.pin],
 ];
 for (const [name, lon, lat] of fixed) if (!clear(project(lon, lat), MARK_MARGIN)) errors.push(`${name} está en tierra o pegada a ella`);
 
 const declared = [...config.matchAll(/^\s+'([a-z0-9-]+)',$/gm)].map((m) => m[1]);
-const inRoute = costera.route.map((p) => p.name).filter(Boolean);
+const inRoute = ['aproximacion', 'presalida', ...costera.route.map((p) => p.name).filter(Boolean)];
 for (const name of declared) if (!inRoute.includes(name)) errors.push(`El punto "${name}" de WAYPOINTS no está en costera.json`);
 for (const name of inRoute) if (!declared.includes(name)) errors.push(`El punto "${name}" de costera.json no está en WAYPOINTS`);
 
-const miles = route.slice(1).reduce((sum, p, i) => sum + Math.hypot(p[0] - route[i][0], p[1] - route[i][1]), 0) / unitsPerMile;
 if (errors.length) {
   console.error(errors.join('\n'));
   process.exit(1);
 }
-console.log(`Costera correcta: ${route.length} puntos, ${fixed.length} objetos fondeados y ${miles.toFixed(1)} mn en agua.`);
+console.log(
+  `Costera correcta con viento de cualquier dirección (180 casos): hasta ${longest.toFixed(1)} mn navegadas y ${mostTacks} puntos de virada, todo en agua.`,
+);
