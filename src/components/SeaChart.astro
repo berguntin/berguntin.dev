@@ -87,8 +87,9 @@ const [torreX, torreY] = chart.points.torre;
       <g class="boat" id="sea-boat" transform={`translate(${route[0][0]} ${route[0][1]})`}>
         <path d="M0,-10 C3.6,-6 3.9,2 3,10 L-3,10 C-3.9,2 -3.6,-6 0,-10Z" />
         <g id="sea-boom">
-          <path d="M0,-4 Q2.6,2 0,8" />
-          <line x1="0" y1="-4" x2="0" y2="8" />
+          <!-- Vela con la bolsa hacia estribor; laser.ts la refleja cuando la botavara va a babor. -->
+          <path class="boat__sail" d="M0,-4 Q4.4,2.2 0,9 Q1.7,2.2 0,-4Z" />
+          <line x1="0" y1="-4" x2="0" y2="9" />
         </g>
       </g>
     </g>
@@ -145,6 +146,7 @@ const [torreX, torreY] = chart.points.torre;
   .course__marker text { fill: var(--mark); font-family: var(--font-mono); font-size: 10px; font-weight: 500; }
   .label--water { fill: var(--iso-line); opacity: 1; letter-spacing: 0.5em; }
   .boat path { fill: var(--paper); stroke: var(--ink); stroke-width: 1.2px; vector-effect: non-scaling-stroke; }
+  .boat .boat__sail { fill: var(--ink); fill-opacity: 0.85; stroke-width: 1px; }
   .boat line { stroke: var(--ink); stroke-width: 1.6px; stroke-linecap: round; vector-effect: non-scaling-stroke; }
 
   @media (max-width: 767px) {

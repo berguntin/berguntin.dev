@@ -41,11 +41,16 @@ export function locate(legs: Leg[], distance: number, { loop = true, turnRadius 
   };
 }
 
-/** La botavara se abre a sotavento: cerrada en ceñida, abierta en popa. */
-export function boomAngle(heading: number) {
-  const offWind = Math.min(Math.abs(((heading + 540) % 360) - 180), 180);
-  const open = 8 + (Math.max(0, offWind - 45) / 135) * 77;
-  const side = ((heading % 360) + 360) % 360 < 180 ? -1 : 1;
+/**
+ * Ángulo de la botavara respecto a crujía, con signo: negativo a estribor, positivo a babor.
+ * `relative` es el rumbo menos la dirección de la que sopla el viento. La botavara va siempre a
+ * sotavento y se abre con el ángulo al viento: unos 7° en ceñida, 22° a un descuartelar,
+ * 47° de través y hasta 85° en popa.
+ */
+export function boomAngle(relative: number) {
+  const offWind = Math.min(Math.abs(((relative + 540) % 360) - 180), 180);
+  const open = Math.min(85, Math.max(6, 5 + (offWind - 40) * 0.85));
+  const side = ((relative % 360) + 360) % 360 < 180 ? -1 : 1;
   return side * open;
 }
 

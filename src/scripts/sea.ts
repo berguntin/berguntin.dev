@@ -83,7 +83,7 @@ if (svg && camera && boat && boom && wake) {
     camera.setAttribute('transform', `translate(${anchorX} ${anchorY}) scale(${scale}) translate(${-x} ${-py})`);
 
     // Barco y balizas mantienen su tamaño en pantalla aunque la carta haga zoom.
-    placeBoat(boat, boom, x, py, heading, 1.3 / scale, wind.direction);
+    placeBoat(boat, boom, x, py, heading, 1.6 / scale, wind.direction);
     for (const { el, at } of markers) el.setAttribute('transform', `translate(${at[0]} ${at[1]}) scale(${1 / scale})`);
 
     // Estela: la derrota hasta el punto donde está el barco.
