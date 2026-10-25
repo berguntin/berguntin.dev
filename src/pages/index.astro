@@ -1,0 +1,62 @@
+---
+import Base from '../layouts/Base.astro';
+import SiteNav from '../components/SiteNav.astro';
+import SeaChart from '../components/SeaChart.astro';
+import Compass from '../components/Compass.astro';
+import Hero from '../components/Hero.astro';
+import Course from '../components/Course.astro';
+import Contact from '../components/Contact.astro';
+---
+
+<Base
+  title="Hugo Bermúdez · Frontend Engineer"
+  description="Frontend engineer gallego especializado en Vue 3, Nuxt y TypeScript, con IA aplicada en producción. SaaS, webs B2B y aplicaciones enterprise."
+>
+  <SeaChart />
+  <SiteNav />
+  <main id="contenido" tabindex="-1">
+    <Hero />
+    <Course />
+    <Contact />
+  </main>
+  <footer class="footer">
+    <p>Hugo Bermúdez Guntín · Hecho con Astro</p>
+    <p>
+      Costa ©
+      <a href="https://www.openstreetmap.org/copyright" rel="noopener" target="_blank">colaboradores de OpenStreetMap</a>
+      · Viento de <a href="https://open-meteo.com" rel="noopener" target="_blank">Open-Meteo</a> · Carta no apta para la
+      navegación
+    </p>
+  </footer>
+  <Compass />
+</Base>
+
+<style>
+  main {
+    position: relative;
+    z-index: 1;
+  }
+  main:focus { outline: none; }
+  .footer {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--s-75) var(--s-300);
+    max-width: 1200px;
+    margin-inline: auto;
+    padding-inline: var(--s-200);
+    padding-block: var(--s-300) calc(env(safe-area-inset-bottom, 0px) + 200px);
+    border-top: 1px solid var(--rule);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--ink-muted);
+  }
+  .footer a { text-underline-offset: 3px; }
+  /* Deja libre la esquina del compás. */
+  @media (min-width: 768px) {
+    .footer { padding-inline-end: 240px; }
+  }
+</style>

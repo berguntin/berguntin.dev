@@ -1,0 +1,158 @@
+---
+// Parte de navegación de un tramo: condiciones, rumbo, aparejo y llegada.
+interface Leg {
+  conditions: string;
+  course: string;
+  rig: string[];
+  arrival: { value?: string; label: string }[];
+  links: { label: string; href: string }[];
+}
+interface Props {
+  leg: Leg;
+  compact?: boolean;
+}
+const { leg, compact = false } = Astro.props;
+// Con un número impar de celdas, la última ocupa toda la fila para no dejar huecos en la tabla.
+const cellCount = 2 + Number(leg.rig.length > 0) + Number(leg.arrival.length > 0);
+const lastIsWide = cellCount % 2 === 1;
+---
+
+<dl class:list={['log', { 'log--compact': compact }]}>
+  <div class="log__cell">
+    <dt>Condiciones <span>el reto</span></dt>
+    <dd>{leg.conditions}</dd>
+  </div>
+  <div class="log__cell">
+    <dt>Rumbo <span>qué hice</span></dt>
+    <dd>{leg.course}</dd>
+  </div>
+  {
+    leg.rig.length > 0 && (
+      <div class:list={['log__cell', { 'log__cell--wide': lastIsWide && leg.arrival.length === 0 }]}>
+        <dt>Aparejo <span>stack</span></dt>
+        <dd>
+          <ul class="log__rig">
+            {leg.rig.map((item) => (
+              <li>{item}</li>
+            ))}
+          </ul>
+        </dd>
+      </div>
+    )
+  }
+  {
+    leg.arrival.length > 0 && (
+      <div class:list={['log__cell', { 'log__cell--wide': lastIsWide }]}>
+        <dt>Llegada <span>resultado</span></dt>
+        <dd>
+          <ul class="log__arrival">
+            {leg.arrival.map((result) => (
+              <li>
+                {result.value && <strong>{result.value}</strong>}
+                {result.label}
+              </li>
+            ))}
+          </ul>
+        </dd>
+      </div>
+    )
+  }
+  {
+    leg.links.length > 0 && (
+      <div class="log__cell log__cell--wide">
+        <dt>Enlaces</dt>
+        <dd class="log__links">
+          {leg.links.map((link) => (
+            <a href={link.href} rel="noopener" target="_blank">
+              {link.label}
+              <span class="sr-only"> (se abre en otra pestaña)</span>
+            </a>
+          ))}
+        </dd>
+      </div>
+    )
+  }
+</dl>
+
+<style>
+  /* Tabla de hilo fino: el hueco de 1px deja ver la tinta del fondo como en un cuaderno de regata impreso. */
+  .log {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    margin: 0;
+    border: 1px solid var(--rule);
+    background: var(--rule);
+  }
+  .log__cell {
+    display: grid;
+    align-content: start;
+    gap: var(--s-75);
+    min-width: 0;
+    padding: var(--s-200);
+    background: var(--sea);
+  }
+  .log--compact .log__cell { padding: var(--s-100) var(--s-200) var(--s-200); background: var(--paper); }
+  .log__cell--wide { grid-column: 1 / -1; }
+  dt {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  dt span {
+    margin-inline-start: var(--s-50);
+    letter-spacing: 0.04em;
+    text-transform: none;
+    color: var(--ink-muted);
+  }
+  dd {
+    margin: 0;
+    color: var(--ink-muted);
+    text-wrap: pretty;
+  }
+  .log--compact dd { font-size: 0.875rem; line-height: 1.25rem; }
+  .log__rig {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-75);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .log__rig li {
+    padding: var(--s-25) var(--s-75);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1rem;
+    color: var(--ink);
+  }
+  .log__arrival {
+    display: grid;
+    gap: var(--s-75);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    color: var(--ink);
+  }
+  .log__arrival strong {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 600;
+    color: var(--magenta);
+    font-variant-numeric: tabular-nums;
+  }
+  .log--compact .log__arrival strong { font-size: 1.25rem; line-height: 1.75rem; }
+  .log__links { display: flex; flex-wrap: wrap; gap: var(--s-200); }
+  .log__links a { color: var(--ink); font-weight: 600; text-underline-offset: 3px; }
+
+  @media (max-width: 639px) {
+    .log { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>

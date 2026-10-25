@@ -1,0 +1,187 @@
+/* Carta náutica de día (papel) y de noche (pantalla de navegación): fondo de mar, trazo de costa en tinta
+   y el magenta reservado para luces y rumbos, como en una carta real. */
+@font-face {
+  font-family: 'Geist';
+  src: url('../../node_modules/@fontsource-variable/geist/files/geist-latin-wght-normal.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('../../node_modules/@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --sea: #f7fafa;
+  --coast: #3c4650;
+  --ink: #14202b;
+  --ink-muted: #4f5d68;
+  --magenta: #b4127a;
+  --mark: #e0661b;
+  --paper: #ffffff;
+  --glass: rgb(255 255 255 / 0.8);
+  --rule: rgb(20 32 43 / 0.16);
+  --heading-from: #000000;
+  --heading-to: #666666;
+  --coast-line: rgb(20 32 43 / 0.24);
+  --iso-line: rgb(40 100 140 / 0.18);
+  --ok: #2f7d57;
+  --wind-streak: rgb(40 100 140 / 0.34);
+
+  /* Banderas del Código Internacional de Señales: son objetos físicos, no cambian con el tema. */
+  --flag-red: #d7282f;
+  --flag-yellow: #f6c700;
+  --flag-blue: #1f4e9c;
+  --flag-white: #ffffff;
+
+  --font-sans: 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+
+  /* Escala de espaciado y radios cerrada (ver .claude/skills/landing-page-design). */
+  --s-25: 2px; --s-50: 4px; --s-75: 8px; --s-100: 12px; --s-200: 16px; --s-300: 24px;
+  --s-400: 32px; --s-500: 40px; --s-600: 48px; --s-700: 64px; --s-800: 80px; --s-900: 96px;
+
+  --ease-fluid: cubic-bezier(0.32, 0.72, 0, 1);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --sea: #131209;
+    --coast: #8d8a7b;
+    --ink: #ece9dc;
+    --ink-muted: #a9a698;
+    --magenta: #f27cc6;
+    --mark: #f08a3c;
+    --paper: #1f1f1f;
+    --glass: rgb(19 18 9 / 0.8);
+    --rule: rgb(236 233 220 / 0.16);
+    --heading-from: #ffffff;
+    --heading-to: #9b9b9b;
+    --coast-line: rgb(236 233 220 / 0.22);
+    --iso-line: rgb(120 170 200 / 0.16);
+    --ok: #4cc08a;
+    --wind-streak: rgb(160 205 230 / 0.26);
+    color-scheme: dark;
+  }
+}
+:root[data-theme='dark'] {
+  --sea: #131209;
+  --coast: #8d8a7b;
+  --ink: #ece9dc;
+  --ink-muted: #a9a698;
+  --magenta: #f27cc6;
+  --mark: #f08a3c;
+  --paper: #1f1f1f;
+  --glass: rgb(19 18 9 / 0.8);
+  --rule: rgb(236 233 220 / 0.16);
+  --heading-from: #ffffff;
+  --heading-to: #9b9b9b;
+  --coast-line: rgb(236 233 220 / 0.22);
+  --iso-line: rgb(120 170 200 / 0.16);
+  --ok: #4cc08a;
+  --wind-streak: rgb(160 205 230 / 0.26);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  /* Margen al saltar a un ancla. */
+  scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 24px);
+}
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+
+body {
+  margin: 0;
+  background: var(--sea);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.5rem;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+p { text-wrap: pretty; margin: 0; }
+a { color: inherit; }
+
+:focus-visible {
+  outline: 2px solid var(--magenta);
+  outline-offset: 3px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0);
+  white-space: nowrap; border: 0;
+}
+
+.skip-link {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + var(--s-200));
+  left: var(--s-200);
+  z-index: 100;
+  padding: var(--s-75) var(--s-100);
+  background: var(--ink);
+  color: var(--sea);
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  text-decoration: none;
+  transform: translateY(-200%);
+  transition: transform 300ms var(--ease-fluid);
+}
+.skip-link:focus { transform: translateY(0); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Aparición al hacer scroll: pesada y suave, solo en elementos que el script marca como pendientes. */
+.reveal {
+  transition:
+    opacity 900ms var(--ease-fluid),
+    transform 900ms var(--ease-fluid),
+    filter 900ms var(--ease-fluid);
+}
+.reveal.is-pending {
+  opacity: 0;
+  transform: translateY(64px);
+  filter: blur(12px);
+}
+
+/* Botón principal, compartido por el hero y el contacto. */
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-75);
+  padding: var(--s-75) var(--s-100);
+  border-radius: 4px;
+  background: var(--ink);
+  color: var(--sea);
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    transform 500ms var(--ease-fluid),
+    background-color 500ms var(--ease-fluid);
+}
+.button:hover { background: var(--magenta); transform: translateY(-1px); }
+.button:active { transform: scale(0.98); }
+.button svg { width: 20px; height: 20px; flex: none; }

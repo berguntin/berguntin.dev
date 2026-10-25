@@ -1,0 +1,5 @@
+# Configuración de pnpm del proyecto (no es un monorepo: solo hay un paquete en la raíz).
+
+# No instalar versiones publicadas hace menos de 7 días (en minutos).
+# Da margen para que se detecten y retiren paquetes comprometidos antes de que lleguen aquí.
+minimumReleaseAge: 10080

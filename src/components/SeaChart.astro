@@ -1,0 +1,161 @@
+---
+// Carta del golfo Ártabro como fondo fijo, con la costera de la Torre de Hércules a Sada.
+// src/scripts/sea.ts mueve la cámara y el Láser por la derrota según la sección visible.
+import chart from '../data/golfo-artabro.json';
+import costera from '../data/costera.json';
+import { sailCostera } from '../scripts/costera';
+import { REFERENCE_WIND } from '../scripts/wind';
+
+// Proyección equirectangular: la misma que usa scripts/build-chart.py.
+const [S, W, N, E] = chart.bbox as [number, number, number, number];
+const project = (lon: number, lat: number): [number, number] => [
+  Number((((lon - W) / (E - W)) * chart.width).toFixed(1)),
+  Number((((N - lat) / (N - S)) * chart.height).toFixed(1)),
+];
+
+// Puntos de paso fijos. La salida y los bordos de ceñida dependen del viento: aquí se dibujan con el de
+// referencia y sea.ts los recalcula con el real. `pnpm check:route` lo comprueba con cualquier viento.
+const fixed = costera.route.map((p) => ({ name: p.name, at: project(p.lon, p.lat) }));
+const unitsPerMile = chart.height / ((N - S) * 60);
+const sailed = sailCostera(fixed, REFERENCE_WIND.direction, unitsPerMile);
+const route = sailed.route;
+const start = sailed.start;
+const routePath = 'M' + route.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join('L');
+const marks = costera.marks.map((m) => ({ ...m, at: project(m.lon, m.lat) }));
+const line = (ends: { committee: number[]; pin: number[] }) => ({
+  committee: project(ends.committee[0], ends.committee[1]),
+  pin: project(ends.pin[0], ends.pin[1]),
+});
+const finish = line(costera.finish);
+const labels = costera.labels.map((l) => ({ ...l, at: project(l.lon, l.lat) }));
+const [torreX, torreY] = chart.points.torre;
+---
+
+<div class="sea" aria-hidden="true">
+  <canvas id="sea-wind" class="sea__wind"></canvas>
+  <svg
+    id="sea"
+    data-fixed={JSON.stringify(fixed)}
+    data-bbox={JSON.stringify(chart.bbox)}
+    data-size={JSON.stringify([chart.width, chart.height])}
+  >
+    <g id="sea-camera">
+      {chart.iso.map((d, i) => <path class={`iso iso--${i}`} d={d} />)}
+      <path class="coast" d={chart.coastline} />
+      {
+        labels.map((l) => (
+          <text class:list={['label', { 'label--water': l.text === 'GOLFO ÁRTABRO' }]} x={l.at[0]} y={l.at[1]} text-anchor="middle">
+            {l.text}
+          </text>
+        ))
+      }
+      <text class="label label--light" x={torreX - 6} y={torreY + 12} text-anchor="end">
+        Torre de Hércules · GpD(4)B 20s
+      </text>
+      <circle class="torre-glow" cx={torreX} cy={torreY} r="8" />
+      <circle class="torre" cx={torreX} cy={torreY} r="1.6" />
+      <path class="route" id="sea-route" d={routePath} />
+      <line
+        class="course__line"
+        id="sea-start-line"
+        x1={start.pin[0]}
+        y1={start.pin[1]}
+        x2={start.committee[0]}
+        y2={start.committee[1]}
+      />
+      <line class="course__line" x1={finish.pin[0]} y1={finish.pin[1]} x2={finish.committee[0]} y2={finish.committee[1]} />
+      <g class="course__marker" id="sea-start-committee" data-at={JSON.stringify(start.committee)}>
+        <rect x="-4" y="-2.5" width="8" height="5" rx="1.5" />
+      </g>
+      <g class="course__marker" id="sea-start-pin" data-at={JSON.stringify(start.pin)}>
+        <circle class="course__pin" r="2.5" />
+      </g>
+      <g class="course__marker" data-at={JSON.stringify(finish.committee)}>
+        <rect class="course__finish" x="-4" y="-2.5" width="8" height="5" rx="1.5" />
+      </g>
+      <g class="course__marker" data-at={JSON.stringify(finish.pin)}><circle class="course__pin" r="2.5" /></g>
+      {
+        marks.map((m) => (
+          <g class="course__marker" data-at={JSON.stringify(m.at)}>
+            <circle class="course__mark" r="4" />
+            <text x="7" y="-5">
+              {m.label}
+            </text>
+          </g>
+        ))
+      }
+      <path class="wake" id="sea-wake" d={`M${route[0][0]},${route[0][1]}`} />
+      <g class="boat" id="sea-boat" transform={`translate(${route[0][0]} ${route[0][1]})`}>
+        <path d="M0,-10 C3.6,-6 3.9,2 3,10 L-3,10 C-3.9,2 -3.6,-6 0,-10Z" />
+        <g id="sea-boom">
+          <!-- Vela con la bolsa hacia estribor; laser.ts la refleja cuando la botavara va a babor. -->
+          <path class="boat__sail" d="M0,-4 Q4.4,2.2 0,9 Q1.7,2.2 0,-4Z" />
+          <line x1="0" y1="-4" x2="0" y2="9" />
+        </g>
+      </g>
+    </g>
+  </svg>
+</div>
+
+<script>
+  import '../scripts/sea';
+</script>
+
+<style>
+  .sea {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    /* Máscara, no fondo: funde la carta hacia la columna de texto. */
+    -webkit-mask-image: linear-gradient(90deg, transparent 18%, #000 52%);
+    mask-image: linear-gradient(90deg, transparent 18%, #000 52%);
+  }
+  .sea svg { position: relative; display: block; width: 100%; height: 100%; }
+  /* Partículas de viento (src/scripts/wind-field.ts), debajo de la costera y del barco. */
+  .sea__wind { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .coast { fill: none; stroke: var(--coast-line); stroke-width: 1; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .iso { fill: none; stroke: var(--iso-line); stroke-width: 0.9; vector-effect: non-scaling-stroke; }
+  .iso--1 { stroke-dasharray: 5 4; }
+  .route { fill: none; stroke: var(--magenta); stroke-width: 1.2; stroke-dasharray: 3 5; opacity: 0.45; vector-effect: non-scaling-stroke; }
+  .wake {
+    fill: none;
+    stroke: var(--magenta);
+    stroke-width: 1.6;
+    stroke-linejoin: round;
+    opacity: 0.85;
+    vector-effect: non-scaling-stroke;
+  }
+  .label { font-family: var(--font-mono); font-size: 4.2px; letter-spacing: 0.3em; fill: var(--ink-muted); opacity: 0.8; }
+  .label--light { fill: var(--magenta); letter-spacing: 0.04em; font-size: 3.4px; }
+  .torre { fill: var(--magenta); }
+  .torre-glow { fill: var(--magenta); opacity: 0; animation: torre-flash 20s linear infinite; }
+  /* Grupo de 4 destellos cada 20 s: (L0.3 oc3.0) x3, L0.3 oc9.8 */
+  @keyframes torre-flash {
+    0%, 1.5% { opacity: 0.35; }
+    1.6%, 16.4% { opacity: 0; }
+    16.5%, 18% { opacity: 0.35; }
+    18.1%, 32.9% { opacity: 0; }
+    33%, 34.5% { opacity: 0.35; }
+    34.6%, 49.4% { opacity: 0; }
+    49.5%, 51% { opacity: 0.35; }
+    51.1%, 100% { opacity: 0; }
+  }
+  .course__line { stroke: var(--ink); stroke-width: 1px; stroke-dasharray: 2 3; vector-effect: non-scaling-stroke; opacity: 0.7; }
+  .course__marker rect { fill: var(--paper); stroke: var(--ink); stroke-width: 1px; vector-effect: non-scaling-stroke; }
+  .course__marker .course__finish { fill: var(--flag-blue); }
+  .course__pin { fill: var(--mark); opacity: 0.8; }
+  .course__mark { fill: var(--mark); }
+  .course__marker text { fill: var(--mark); font-family: var(--font-mono); font-size: 10px; font-weight: 500; }
+  .label--water { fill: var(--iso-line); opacity: 1; letter-spacing: 0.5em; }
+  .boat path { fill: var(--paper); stroke: var(--ink); stroke-width: 1.2px; vector-effect: non-scaling-stroke; }
+  .boat .boat__sail { fill: var(--ink); fill-opacity: 0.85; stroke-width: 1px; }
+  .boat line { stroke: var(--ink); stroke-width: 1.6px; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+
+  @media (max-width: 767px) {
+    .sea { -webkit-mask-image: none; mask-image: none; opacity: 0.32; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .torre-glow { animation: none; }
+  }
+</style>

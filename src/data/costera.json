@@ -1,0 +1,30 @@
+{
+  "name": "Costera Torre de Hércules → Sada",
+  "note": "Puntos de paso fijos. La aproximación, la presalida, la línea de salida y los bordos de ceñida se calculan con el viento en src/scripts/costera.ts.",
+  "route": [
+    {"name": "salida", "lon": -8.396, "lat": 43.399},
+    {"name": "virada", "lon": -8.373, "lat": 43.402},
+    {"name": "baliza-1", "lon": -8.35, "lat": 43.405},
+    {"name": null, "lon": -8.33, "lat": 43.4135},
+    {"name": null, "lon": -8.315, "lat": 43.412},
+    {"name": "baliza-2", "lon": -8.3, "lat": 43.414},
+    {"name": null, "lon": -8.284, "lat": 43.405},
+    {"name": "baliza-3", "lon": -8.263, "lat": 43.39},
+    {"name": null, "lon": -8.252, "lat": 43.376},
+    {"name": "llegada", "lon": -8.241, "lat": 43.366},
+    {"name": "fin", "lon": -8.238, "lat": 43.364}
+  ],
+  "marks": [
+    {"label": "1", "name": "Punta do Seixo Branco", "lon": -8.3505, "lat": 43.4025},
+    {"label": "2", "name": "Punta Torrella", "lon": -8.3025, "lat": 43.4115},
+    {"label": "3", "name": "Punta de San Mamede", "lon": -8.2665, "lat": 43.389}
+  ],
+  "labels": [
+    {"text": "A CORUÑA", "lon": -8.425, "lat": 43.358},
+    {"text": "OLEIROS", "lon": -8.325, "lat": 43.372},
+    {"text": "SADA", "lon": -8.262, "lat": 43.352},
+    {"text": "ARES", "lon": -8.236, "lat": 43.433},
+    {"text": "GOLFO ÁRTABRO", "lon": -8.33, "lat": 43.445}
+  ],
+  "finish": {"committee": [-8.2385, 43.3675], "pin": [-8.2435, 43.3645]}
+}

@@ -1,0 +1,122 @@
+---
+import arrowDownIcon from '@phosphor-icons/core/assets/regular/arrow-down.svg?raw';
+import envelopeIcon from '@phosphor-icons/core/assets/regular/envelope-simple.svg?raw';
+
+const stack = ['Vue 3', 'Nuxt', 'TypeScript', 'Vitest', 'IA aplicada'];
+---
+
+<section class="hero" id="inicio" aria-labelledby="hero-title" data-waypoint="aproximacion" data-zoom="1.4">
+  <div class="hero__inner">
+    <p class="hero__kicker"><span class="hero__dot" aria-hidden="true"></span>Fullstack Engineer · en Valencia</p>
+    <h1 id="hero-title" class="hero__title">
+      <span>Soy Hugo. Construyo<br /> aplicaciones<br /> centradas en el usuario.</span>
+    </h1>
+    <p class="hero__lead">
+      Más de 3 años haciendo SaaS, webs B2B y aplicaciones enterprise con Vue 3, Nuxt y TypeScript.
+    </p>
+    <ul class="hero__stack" aria-label="Stack principal">
+      {stack.map((item) => <li>{item}</li>)}
+    </ul>
+    <div class="hero__actions">
+      <a class="button" href="#contacto">
+        <Fragment set:html={envelopeIcon} />
+        Escríbeme
+      </a>
+      <a class="hero__link" href="#recorrido">
+        Ver el recorrido
+        <Fragment set:html={arrowDownIcon} />
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    max-width: 1200px;
+    margin-inline: auto;
+    padding-inline: var(--s-200);
+    padding-block: var(--s-800) var(--s-900);
+  }
+  .hero__inner {
+    display: grid;
+    gap: var(--s-300);
+    max-width: 680px;
+  }
+  .hero__kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-75);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+  .hero__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+    background: var(--ok);
+  }
+  .hero__title {
+    font-size: 3.75rem;
+    line-height: 1;
+    font-weight: 600;
+    letter-spacing: -0.035em;
+  }
+  .hero__title span {
+    background: linear-gradient(90deg, var(--heading-from), var(--heading-to));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .hero__lead {
+    max-width: 600px;
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+    color: var(--ink-muted);
+  }
+  .hero__stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-75);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1rem;
+  }
+  .hero__stack li {
+    padding: var(--s-50) var(--s-75);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--sea);
+  }
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-200);
+    margin-block-start: var(--s-75);
+  }
+  .hero__link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-75);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 500ms var(--ease-fluid);
+  }
+  .hero__link:hover { color: var(--magenta); }
+  .hero__link :global(svg) { width: 18px; height: 18px; }
+
+  @media (max-width: 767px) {
+    .hero { padding-block: var(--s-500) var(--s-800); }
+    .hero__inner { gap: var(--s-200); }
+    .hero__title { font-size: 2.25rem; line-height: 2.5rem; }
+    .hero__title br { display: none; }
+    .hero__lead { font-size: 1.125rem; line-height: 1.75rem; }
+  }
+</style>

@@ -1,0 +1,77 @@
+---
+// Escribe una palabra con banderas del Código Internacional de Señales.
+interface Props {
+  word: string;
+  size?: 'sm' | 'lg';
+  showLetters?: boolean;
+}
+
+const { word, size = 'lg', showLetters = false } = Astro.props;
+const letters = [...word.toUpperCase()];
+const names: Record<string, string> = { H: 'Hotel', U: 'Uniform', G: 'Golf', O: 'Oscar' };
+---
+
+<span class={`flags flags--${size}`} role="img" aria-label={word}>
+  {
+    letters.map((letter) => (
+      <span class="flag" title={names[letter] ? `${letter} · ${names[letter]}` : letter}>
+        <svg viewBox="0 0 40 30" aria-hidden="true" focusable="false">
+          {letter === 'H' && (
+            <>
+              <rect width="20" height="30" fill="var(--flag-white)" />
+              <rect x="20" width="20" height="30" fill="var(--flag-red)" />
+            </>
+          )}
+          {letter === 'U' && (
+            <>
+              <rect width="40" height="30" fill="var(--flag-white)" />
+              <rect width="20" height="15" fill="var(--flag-red)" />
+              <rect x="20" y="15" width="20" height="15" fill="var(--flag-red)" />
+            </>
+          )}
+          {letter === 'G' && (
+            <>
+              <rect width="40" height="30" fill="var(--flag-yellow)" />
+              {[1, 3, 5].map((i) => (
+                <rect x={(40 / 6) * i} width={40 / 6} height="30" fill="var(--flag-blue)" />
+              ))}
+            </>
+          )}
+          {letter === 'O' && (
+            <>
+              <path d="M0 0H40V30Z" fill="var(--flag-red)" />
+              <path d="M0 0V30H40Z" fill="var(--flag-yellow)" />
+            </>
+          )}
+          <rect x="0.5" y="0.5" width="39" height="29" fill="none" stroke="var(--coast)" stroke-width="1" />
+        </svg>
+        {showLetters && <span class="flag__letter" aria-hidden="true">{letter}</span>}
+      </span>
+    ))
+  }
+</span>
+
+<style>
+  .flags {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: var(--s-50);
+  }
+  .flags--lg { gap: var(--s-75); }
+  .flag {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--s-50);
+  }
+  .flag svg { display: block; }
+  .flags--sm svg { width: 20px; height: 15px; }
+  .flags--lg svg { width: 48px; height: 36px; }
+  .flag__letter {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1rem;
+    letter-spacing: 0.08em;
+    color: var(--ink-muted);
+  }
+</style>
