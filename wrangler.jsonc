@@ -1,0 +1,21 @@
+// Cloudflare Workers: la web es HTML estático, así que el Worker solo sirve los archivos de dist/.
+// No hay código de servidor (sin "main"): cada petición la resuelve el servicio de assets.
+{
+  "name": "berguntin-dev",
+  "compatibility_date": "2026-10-25",
+  "assets": {
+    "directory": "./dist",
+    // /recorrido y /recorrido/ resuelven al mismo index.html sin redirecciones de más.
+    "html_handling": "auto-trailing-slash",
+    // Sirve dist/404.html cuando exista (la 404 "Fuera de carta" está pendiente).
+    "not_found_handling": "404-page"
+  },
+  // Dominio propio. Requiere que berguntin.dev esté como zona en la cuenta de Cloudflare.
+  "routes": [
+    { "pattern": "berguntin.dev", "custom_domain": true },
+    { "pattern": "www.berguntin.dev", "custom_domain": true }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}

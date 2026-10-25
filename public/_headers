@@ -1,0 +1,11 @@
+# Cabeceras de Cloudflare Workers Assets.
+
+# Los archivos de /_astro/ llevan hash en el nombre: se pueden cachear para siempre.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
