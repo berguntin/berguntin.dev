@@ -10,11 +10,12 @@
     // Sirve dist/404.html cuando exista (la 404 "Fuera de carta" está pendiente).
     "not_found_handling": "404-page"
   },
-  // Dominio propio. Requiere que berguntin.dev esté como zona en la cuenta de Cloudflare.
+  /* Dominio propio. Pendiente propagacion de nuevos DNS de berguntin.dev a Cloudflare.
   "routes": [
     { "pattern": "berguntin.dev", "custom_domain": true },
     { "pattern": "www.berguntin.dev", "custom_domain": true }
   ],
+  */
   "observability": {
     "enabled": true
   }
