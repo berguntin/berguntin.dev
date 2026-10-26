@@ -76,6 +76,14 @@ scripts/build-chart.py        Genera src/data/golfo-artabro.json desde OpenStree
 scripts/check-route.mjs       Navega la costera con 180 direcciones de viento y la comprueba contra la costa
 ```
 
+## Metodología de trabajo con Git:
+
+Usa el standard "conventional commits" referencia completa: (https://www.conventionalcommits.org/en/v1.0.0/#specification).
+Haz commits pequeños para mejorar la trazabilidad.
+Una rama por tarea. Siempre parte desde main.
+Nombres de ramas y mensajes de commit, siempre en inglés
+
+
 ## Contenido del recorrido
 
 Cada tramo es un `.md` en `src/content/recorrido/`. El nombre del archivo es el ancla (`#navertia`), así que usa nombres cortos sin números delante. Campos principales (esquema completo en `src/content.config.ts`):
@@ -87,8 +95,6 @@ Cada tramo es un `.md` en `src/content/recorrido/`. El nombre del archivo es el 
 - El cuerpo Markdown es una frase de entrada corta con tono marinero.
 
 Orden actual y punto de la costera: salida frente a la Torre (marketing 2013 → 2021), primera virada en la bocana de la ría de A Coruña (DAW 2022), baliza 1 en Seixo Branco (Navertia, mar 2022 → nov 2025), baliza 2 en Punta Torrella, a la entrada de la ría de Ares e Betanzos (Saluzen, freelance desde nov 2025), baliza 3 en San Mamede (proyectos propios) y llegada en Sada (GDG Valencia). El hero es la aproximación, la introducción del recorrido la presalida y el contacto el final, con la cámara alejándose para ver toda la costera.
-
-**Cifras retiradas:** el CV de 2026 ya no recoge "1000+ usuarios concurrentes", "+20% de rendimiento", "menos de 4 semanas", "6 h" ni "~40 mascotas". No las vuelvas a poner.
 
 ## La carta y la navegación
 
@@ -140,23 +146,3 @@ El sistema visual sigue `.claude/skills/landing-page-design/SKILL.md`. Lo más i
 - Los SVG decorativos llevan `aria-hidden="true"`; los que transmiten información, `role="img"` y una etiqueta.
 - Los enlaces que abren otra pestaña lo anuncian con texto para lectores de pantalla.
 
-## Historial de decisiones
-
-1. Se descartó un concepto de metro de Valencia: no representa a Hugo. Se eligió vela y regata.
-2. Astro en lugar de Nuxt, con Vue solo para islas.
-3. Primer hero: carta protagonista con cartela, rosa y panel de viento. Se descartó por denso.
-4. Mockup minimalista y después **carta como fondo que se recorre con el scroll y compás que gira con el rumbo**: es la dirección actual.
-5. El tracker lateral del recorrido se eliminó porque la carta de fondo cumple esa función.
-6. Se cambió de npm a pnpm con `minimumReleaseAge` de 7 días.
-7. Se probó una regata de bastón con desmarque fondeada con el viento en directo. Se descartó.
-8. Dirección actual: costera de la Torre de Hércules a Sada por la ría de Ares e Betanzos, con la carta ampliada al golfo Ártabro.
-
-## Pendiente
-
-- Texto de contacto: Hugo tiene que decidir si busca empleo, clientes freelance o ambos.
-- Punto verde de disponibilidad en el hero: por confirmar.
-- URL de la demo de Bill Splitter (el CV dice "Demo" sin enlace).
-- Si Apotheke (en desarrollo) se muestra o se oculta.
-- Sección "plano de vela": habilidades como partes del Láser.
-- Versión en inglés con i18n.
-- Imagen `og:image`, 404 temática ("Fuera de carta") y despliegue.
